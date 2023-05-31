@@ -6,17 +6,16 @@ This JavaScript client gives you an easy way to install and interact with the Ca
 
 Run this command to install the client:
 
-> **NOTE**
->
-> The `casper-cep18-js-client` requires `casper-js-sdk` as peer dependency
 
 ```bash
 npm install casper-js-sdk casper-cep18-js-client
 ```
 
-## Usage example
+The `casper-cep18-js-client` requires `casper-js-sdk` as a peer dependency.
 
-- Create an instance of the CEP-18 client:
+## Usage Examples
+
+Create an instance of the CEP-18 client:
 
   ```ts
   import { ContractWASM, CEP18Client } from 'casper-cep18-js-client';
@@ -27,7 +26,7 @@ npm install casper-js-sdk casper-cep18-js-client
   const cep18 = new CEP18Client(NODE_URL, NETWORK_NAME);
   ```
 
-- Create a deploy to install the contract:
+Create a deploy to install the contract:
 
   ```ts
   const deploy = cep18.install(
@@ -45,7 +44,7 @@ npm install casper-js-sdk casper-cep18-js-client
   );
   ```
 
-- Set the contract hash (a unique identifier for the network):
+Set the contract hash (a unique identifier for the network):
 
   ```ts
   cep18.setContractHash(
@@ -53,7 +52,7 @@ npm install casper-js-sdk casper-cep18-js-client
   );
   ```
 
-- You can retrieve token infomation by calling these methods:
+You can retrieve token information by calling these methods:
 
   ```ts
   const name = await cep18.name();
@@ -65,9 +64,9 @@ npm install casper-js-sdk casper-cep18-js-client
   const decimals = await cep18.decimals();
   ```
 
-- **Transfers**
+**Transfers**
 
-  - Create a deploy to transfer some tokens from the direct caller to a recipient:
+Create a deploy to transfer some tokens from the direct caller to a recipient:
 
     ```ts
     const deploy = cep18.transfer(
@@ -79,7 +78,7 @@ npm install casper-js-sdk casper-cep18-js-client
     );
     ```
 
-  - Create a deploy to transfer from an account owner to a recipient given that the direct caller has been previously approved to spend the specified amount on behalf of the owner:
+Create a deploy to transfer from an account owner to a recipient, given that the direct caller has been previously approved to spend the specified amount on behalf of the owner:
 
     ```ts
     const deploy = cep18.transferFrom(
@@ -95,17 +94,17 @@ npm install casper-js-sdk casper-cep18-js-client
     );
     ```
 
-- **Balances**
+**Balances**
 
-  Request the balance of an account with _balanceOf_:
+Request the balance of an account with _balanceOf_:
 
   ```ts
   const balance = await cep18.balanceOf(publicKey);
   ```
 
-- **Approvals**
+**Approvals**
 
-  Create a deploy to allow a spender to transfer up to a number of the direct caller’s tokens:
+Create a deploy to allow a spender to transfer up to a number of the direct caller’s tokens:
 
   ```ts
   const deploy = cep18.approve(
@@ -120,9 +119,9 @@ npm install casper-js-sdk casper-cep18-js-client
   );
   ```
 
-- **Allowance**
+**Allowance**
 
-  Return the number of owner’s tokens allowed to be spent by spender:
+Return the number of owner’s tokens allowed to be spent by spender:
 
   ```ts
   const allowance = await cep18.allowances(
@@ -133,13 +132,13 @@ npm install casper-js-sdk casper-cep18-js-client
 
 ## Event Handling
 
-CEP18 token supports [CES](https://github.com/make-software/casper-event-standard) and the token can be intalled with CES or NoCES method. If the token is installed with CES method, you can listen token events by using `EventStream` from `casper-js-sdk`. To consume token events, you should install `@make-software/ces-js-parser` by running
+The CEP-18 token supports the [Casper Event Standard (CES)](https://github.com/make-software/casper-event-standard), and the token can be installed with the CES or NoCES method. If you install the token with the CES method, you can listen to token events using the `EventStream` from the `casper-js-sdk`. To consume token events, you should also install the `@make-software/ces-js-parser` by running this command:
 
 ```bash
 npm install @make-software/ces-js-parser
 ```
 
-- Setup EventStream
+Set up the `EventStream`:
 
 ```ts
 import { EventStream } from 'casper-js-sdk';
@@ -157,9 +156,9 @@ await cep18.setupEventStream(
 );
 ```
 
-- Consume events
+Consume events using event listeners.
 
-  - Add event listener
+  - Add an event listener:
 
   ```ts
   const listener = event => {
@@ -170,7 +169,7 @@ await cep18.setupEventStream(
   cep18.on('Burn', listener);
   ```
 
-  - Remove event listener
+  - Remove an event listener:
 
   ```ts
   cep18.off('Burn', listener);
@@ -178,51 +177,49 @@ await cep18.setupEventStream(
 
 ## More examples
 
-You can find all the available examples in the [E2E test script](https://github.com/casper-ecosystem/cep18/blob/master/client-js/tests/e2e/).
+All the available examples are in the [E2E test script](https://github.com/casper-ecosystem/cep18/blob/master/client-js/tests/e2e/).
 
 ## Development
 
-Before install node modules, make sure the wasm file is generated.
-
-- You can generate wasm file by running
+Before installing the node modules, make sure the Wasm file is generated by running the following:
 
   ```bash
   make build-contracts
   ```
 
-- After generate wasm file, you can install node modules and the wasm will be automatically bundled.
+After generating the Wasm file, you can install the node modules, and the Wasm will be automatically bundled.
 
   ```bash
   npm install
   ```
 
-## Test
+## Testing
 
-- Clone this repo
+The tests are already available in the parent repository:
 
 ```bash
 git clone https://github.com/casper-ecosystem/cep18.git
 ```
 
-- Go to `client-js` directory
+Go to the `client-js` directory:
 
 ```bash
 cd client-js
 ```
 
-- Intall modules using
+Intall the node modules using the following:
 
 ```bash
 npm install
 ```
 
-- Run unit test by
+Run unit tests:
 
 ```bash
 npm run test:unit
 ```
 
-- You can test the script by running the [local network](https://github.com/casper-network/casper-node/blob/dev/utils/nctl/README.md). After running the local network run the test by
+You can test the script by running a [local network](https://github.com/casper-network/casper-node/blob/dev/utils/nctl/README.md). After setting up the local network, run the test script with this command:
 
 ```bash
 npm run test:e2e
