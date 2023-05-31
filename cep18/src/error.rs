@@ -1,11 +1,11 @@
-//! Error handling on the casper platform.
+//! Error handling on the Casper platform.
 use casper_types::ApiError;
 
-/// Errors which can be returned by the library.
+/// Errors that the contract can return.
 ///
 /// When an `Error` is returned from a smart contract, it is converted to an [`ApiError::User`].
 ///
-/// Where a smart contract consuming this library needs to define further error variants, it can
+/// While the code consuming this contract needs to define further error variants, it can
 /// return those via the [`Error::User`] variant or equivalently via the [`ApiError::User`]
 /// variant.
 #[repr(u16)]
