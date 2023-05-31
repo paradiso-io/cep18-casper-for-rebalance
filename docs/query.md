@@ -1,4 +1,4 @@
-# Query the Contract Package
+# Query the Contract Package with the Casper Client
 
 Query the contract package hash which returns the package:
 

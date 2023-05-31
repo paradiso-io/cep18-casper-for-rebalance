@@ -1,5 +1,5 @@
 
-# Token Approvals
+# Token Approvals with the Casper Client
 
 ### Transfer 10 Tokens from an Allowance of only 5
 

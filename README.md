@@ -1,6 +1,6 @@
 # Casper Fungible Tokens (CEP-18 Standard)
 
-This repository contains a reference contract and tests for developing fungible tokens on a Casper network, following the [CEP-18 standard](https://github.com/casper-network/ceps/pull/18).
+This repository contains a reference contract implementation and tests for fungible tokens on a Casper network, following the [CEP-18 standard](https://github.com/casper-network/ceps/pull/18).
 
 ## Preparation
 

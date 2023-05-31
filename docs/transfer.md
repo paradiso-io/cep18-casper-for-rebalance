@@ -1,4 +1,4 @@
-# Token Transfers
+# Token Transfers with the Casper Client
 
 ## Transfer 50 Fungible Tokens from A to B
 

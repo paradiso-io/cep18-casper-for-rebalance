@@ -1,5 +1,5 @@
 
-# Checking Final Balances
+# Checking Final Balances with the Casper Client
 
 In this section, we check the final balance for all users.
 
