@@ -1,5 +1,5 @@
 export enum ERROR_CODES {
-  /// CEP18 contract called from within an invalid context.
+  /// CEP-18 contract called from within an invalid context.
   InvalidContext = 60000,
   /// Spender does not have enough balance.
   InsufficientBalance = 60001,
