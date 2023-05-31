@@ -3,7 +3,7 @@
 
 This guide introduces you to using a fungible token contract on the [Casper Network](https://cspr.live/).
 
-The [Ethereum Request for Comment (CEP-18)](https://eips.ethereum.org/EIPS/eip-20#specification) standard defines a set of rules that dictate the total supply of tokens, how the tokens are transferred, how transactions are approved, and how token data is accessed. These fungible tokens are blockchain-based assets that have value and can be transferred or recorded.
+The [Ethereum Request for Comment (ERC-20)](https://eips.ethereum.org/EIPS/eip-20#specification) standard defines a set of rules that dictate the total supply of tokens, how the tokens are transferred, how transactions are approved, and how token data is accessed. These fungible tokens are blockchain-based assets that have value and can be transferred or recorded.
 
 We will employ the following test accounts to demonstrate the use of a fungible token contract and transfer tokens between user accounts:
 
