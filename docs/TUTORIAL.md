@@ -2,7 +2,7 @@
 
 This tutorial introduces an implementation of the CEP-18 standard for the Casper blockchain, known as the Casper Fungible Token. The code for this tutorial is available in [GitHub](https://github.com/casper-ecosystem/cep18).
 
-The [Ethereum Request for Comment (CEP-18)](https://eips.ethereum.org/EIPS/eip-20#specification) standard is an integral part of the Ethereum ecosystem. This standard is well established for building new tokens based on smart contracts. These CEP-18 tokens are blockchain-based assets that have value and can be transferred or recorded.
+The [Ethereum Request for Comment](https://eips.ethereum.org/EIPS/eip-20#specification) standard is an integral part of the Ethereum ecosystem. This standard is well established for building new tokens based on smart contracts. These CEP-18 tokens are blockchain-based assets that have value and can be transferred or recorded.
 
 The Casper Fungible Token standard is the Casper Platform's CEP-18 equivalent. It defines a set of rules that dictate the total supply of tokens, how the tokens are transferred, how transactions are approved, and how token data is accessed.
 

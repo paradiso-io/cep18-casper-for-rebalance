@@ -30,6 +30,9 @@ Before you dive into the details of this guide, ensure you meet these requiremen
 
 Clone the fungible token (CEP-18) contract repository and run the `make build-contract` command. This will create the `cep18_token.wasm` and the `cep18_test_call.wasm`. The token Wasm is the main contract. We will use the `test_call` contract wasm to query the balances and allowances of the fungible token balances throughout this workflow.
 
+<!-- TODO explain required and optional installation parameters, as we do for the cep-78 contract. -->
+<!-- TODO show entry point usage, especially mint, transfer, burn. -->
+
 ## Install the Main Fungible Token Contract
 
 ```bash
@@ -54,7 +57,7 @@ casper-client put-deploy -n http://3.143.158.19:7777 \
 --payment-amount 90000000000
 ```
 
-At this point, the account that installed both the main contract and the helper contract will look like this.
+At this point, the account that installed both the main contract and the helper test contract will look like this.
 
 ```bash
 {
