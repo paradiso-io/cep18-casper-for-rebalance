@@ -6,7 +6,6 @@ This JavaScript client gives you an easy way to install and interact with the Ca
 
 Run this command to install the client:
 
-
 ```bash
 npm install casper-js-sdk casper-cep18-js-client
 ```
@@ -17,122 +16,136 @@ The `casper-cep18-js-client` requires `casper-js-sdk` as a peer dependency.
 
 Create an instance of the CEP-18 client:
 
-  ```ts
-  import { ContractWASM, CEP18Client } from 'casper-cep18-js-client';
+```ts
+import { ContractWASM, CEP18Client } from 'casper-cep18-js-client';
 
-  const NODE_URL = 'http://localhost:11101/rpc';
-  const NETWORK_NAME = 'casper-net-1';
+const NODE_URL = 'http://localhost:11101/rpc';
+const NETWORK_NAME = 'casper-net-1';
 
-  const cep18 = new CEP18Client(NODE_URL, NETWORK_NAME);
-  ```
+const cep18 = new CEP18Client(NODE_URL, NETWORK_NAME);
+```
 
 Create a deploy to install the contract:
 
-  ```ts
-  const deploy = cep18.install(
-    ContractWASM, // Contract wasm
-    {
-      name: 'TEST',
-      symbol: 'TST',
-      decimals: 9,
-      totalSupply: 50_000_000_000
-    },
-    60_000_000_000, // Payment Amount
-    ownerPublicKey,
-    NETWORK_NAME,
-    [owner]
-  );
+```ts
+const deploy = cep18.install(
+  ContractWASM, // Contract wasm
+  {
+    name: 'TEST',
+    symbol: 'TST',
+    decimals: 9,
+    totalSupply: 50_000_000_000
+  },
+  60_000_000_000, // Payment Amount
+  ownerPublicKey,
+  NETWORK_NAME,
+  [owner]
+);
   ```
 
 Set the contract hash (a unique identifier for the network):
 
-  ```ts
-  cep18.setContractHash(
-    'hash-c2402c3d88b13f14390ff46fde9c06b8590c9e45a9802f7fb8a2674ff9c1e5b1'
-  );
-  ```
+```ts
+cep18.setContractHash(
+  'hash-c2402c3d88b13f14390ff46fde9c06b8590c9e45a9802f7fb8a2674ff9c1e5b1'
+);
+```
 
 You can retrieve token information by calling these methods:
 
-  ```ts
-  const name = await cep18.name();
+```ts
+const name = await cep18.name();
 
-  const symbol = await cep18.symbol();
+const symbol = await cep18.symbol();
 
-  const totalSupply = await cep18.totalSupply();
+const totalSupply = await cep18.totalSupply();
 
-  const decimals = await cep18.decimals();
-  ```
+const decimals = await cep18.decimals();
+```
 
 **Transfers**
 
 Create a deploy to transfer some tokens from the direct caller to a recipient:
 
-    ```ts
-    const deploy = cep18.transfer(
-      { recipient: recipientPublicKey, amount: 50_000_000_000 },
-      5_000_000_000, // Payment amount
-      ownerPublicKey,
-      NETWORK_NAME,
-      [ownerAsymmetricKey] // Optional
-    );
-    ```
+```ts
+const deploy = cep18.transfer(
+  { recipient: recipientPublicKey, amount: 50_000_000_000 },
+  5_000_000_000, // Payment amount
+  ownerPublicKey,
+  NETWORK_NAME,
+  [ownerAsymmetricKey] // Optional
+);
+```
 
 Create a deploy to transfer from an account owner to a recipient, given that the direct caller has been previously approved to spend the specified amount on behalf of the owner:
 
-    ```ts
-    const deploy = cep18.transferFrom(
-      {
-        owner: ownerPublicKey,
-        recipient: recipientPublicKey,
-        amount: transferAmount
-      },
-      5_000_000_000,
-      approvedPublicKey,
-      NETWORK_NAME,
-      [approvedAsymmetricKey]
-    );
-    ```
+```ts
+const deploy = cep18.transferFrom(
+  {
+    owner: ownerPublicKey,
+    recipient: recipientPublicKey,
+    amount: transferAmount
+  },
+  5_000_000_000,
+  approvedPublicKey,
+  NETWORK_NAME,
+  [approvedAsymmetricKey]
+);
+```
 
 **Balances**
 
 Request the balance of an account with _balanceOf_:
 
-  ```ts
-  const balance = await cep18.balanceOf(publicKey);
-  ```
+```ts
+const balance = await cep18.balanceOf(publicKey);
+```
 
 **Approvals**
 
 Create a deploy to allow a spender to transfer up to a number of the direct caller’s tokens:
 
-  ```ts
-  const deploy = cep18.approve(
-    {
-      spender: spenderPublicKey,
-      amount: approveAmount
-    },
-    5_000_000_000,
-    ownerPublicKey,
-    NETWORK_NAME,
-    [ownerAsymmetricKey]
-  );
-  ```
+```ts
+const deploy = cep18.approve(
+  {
+    spender: spenderPublicKey,
+    amount: approveAmount
+  },
+  5_000_000_000,
+  ownerPublicKey,
+  NETWORK_NAME,
+  [ownerAsymmetricKey]
+);
+```
 
 **Allowance**
 
 Return the number of owner’s tokens allowed to be spent by spender:
 
-  ```ts
-  const allowance = await cep18.allowances(
-    ownersPublicKey,
-    spenderPublicKey
-  );
-  ```
+```ts
+const allowance = await cep18.allowances(
+  ownersPublicKey,
+  spenderPublicKey
+);
+```
+
+<!-- TODO add increase/decrease allowance -->
+
+**Minting**
+
+<!-- TODO add an example -->
+
+**Burning**
+
+<!-- TODO add an example -->
+
+**Changing Security**
+
+<!-- TODO add an example -->
 
 ## Event Handling
 
-The CEP-18 token supports the [Casper Event Standard (CES)](https://github.com/make-software/casper-event-standard), and the token can be installed with the CES or NoCES method. If you install the token with the CES method, you can listen to token events using the `EventStream` from the `casper-js-sdk`. To consume token events, you should also install the `@make-software/ces-js-parser` by running this command:
+The CEP-18 token supports the [Casper Event Standard (CES)](https://github.com/make-software/casper-event-standard), and the token can be installed with or without event logging as described [here](../cep18/README.md#eventsmode). If you install the token with the EventsMode set to CES, you can listen to token events using the `EventStream` from the `casper-js-sdk`. To consume token events, you should also install the `@make-software/ces-js-parser` by running this command:
 
 ```bash
 npm install @make-software/ces-js-parser
@@ -156,24 +169,24 @@ await cep18.setupEventStream(
 );
 ```
 
-Consume events using event listeners.
+Here is how you can consume events using event listeners.
 
-  - Add an event listener:
+- Add an event listener:
 
-  ```ts
-  const listener = event => {
-    console.log(event.name); // 'Burn'
-    console.log(event.data); // Burn event info
-  };
+```ts
+const listener = event => {
+  console.log(event.name); // 'Burn'
+  console.log(event.data); // Burn event info
+};
 
-  cep18.on('Burn', listener);
-  ```
+cep18.on('Burn', listener);
+```
 
-  - Remove an event listener:
+- Remove an event listener:
 
-  ```ts
-  cep18.off('Burn', listener);
-  ```
+```ts
+cep18.off('Burn', listener);
+```
 
 ## More examples
 
@@ -183,15 +196,15 @@ All the available examples are in the [E2E test script](https://github.com/caspe
 
 Before installing the node modules, make sure the Wasm file is generated by running the following:
 
-  ```bash
-  make build-contracts
-  ```
+```bash
+make build-contracts
+```
 
 After generating the Wasm file, you can install the node modules, and the Wasm will be automatically bundled.
 
-  ```bash
-  npm install
-  ```
+```bash
+npm install
+```
 
 ## Testing
 
