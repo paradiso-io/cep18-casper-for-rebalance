@@ -16,12 +16,13 @@
 
 The fungible token implementation supports a couple of `modalities` that dictate the behavior of a specific contract instance. Modalities represent the common expectations around contract usage and behavior. The following section discusses the modalities currently available.
 
-<!-- TODO can any of these modalities be changed after installation? My understanding is NO.
-If this is correct, add this warning: **IMPORTANT: This mode cannot be changed once the contract has been installed.** -->
+<!-- TODO verify that these modalities canNOT be changed after installation. -->
 
 ### EventsMode
 
 The `EventsMode` modality determines how the installed instance of CEP-18 will handle the recording of events that occur from interacting with the contract. The mode is set by passing a `u8` value to the `events_mode` runtime argument: `--session-arg "events_mode:u8='1'"`. The default behavior is `NoEvents`.
+
+**IMPORTANT: This mode cannot be changed once the contract has been installed.**
 
 The modality provides two options:
 
@@ -60,7 +61,11 @@ For this CEP-18 reference implementation, the events schema is as follows:
 
 ### MintBurn
 
-The `MintBurn` modality dictates whether tokens managed by a given instance of a CEP-18 contract can be minted or burnt after contract installation. This modality provides two options:
+The `MintBurn` modality dictates whether tokens managed by a given instance of a CEP-18 contract can be minted or burnt after contract installation. 
+
+**IMPORTANT: This mode cannot be changed once the contract has been installed.**
+
+This modality provides two options:
 
 1. `Disabled`: Tokens cannot be minted nor burnt after contract installation. This is the default mode.
 2. `MintAndBurn`: Tokens can be minted and burnt.
