@@ -19,7 +19,7 @@ If not, add this warning: **IMPORTANT: This mode cannot be changed once the cont
 
 ### EventsMode
 
-The `EventsMode` modality determines how the installed instance of CEP-18 will handle the recording of events that occur from interacting with the contract. The mode is set by passing a `u8` value to the `events_mode` runtime argument: `enable_mint_burn:u8=1`. The default behavior is `NoEvents`.
+The `EventsMode` modality determines how the installed instance of CEP-18 will handle the recording of events that occur from interacting with the contract. The mode is set by passing a `u8` value to the `events_mode` runtime argument: `--session-arg "events_mode:u8='1'"`. The default behavior is `NoEvents`.
 
 The modality provides two options:
 
@@ -31,14 +31,6 @@ The modality provides two options:
 | NoEvents   | 0   |
 | CES        | 1   |
 
-<!-- TODO add an example 
-
-**Example**:
-
-```bash
-
-```
--->
 
 #### The Casper Event Standard
 
@@ -76,18 +68,26 @@ The `MintBurn` modality dictates whether tokens managed by a given instance of a
 | Disabled    | 0   |
 | MintAndBurn | 1   |
 
-This modality is specified by providing an optional runtime argument during installation. The mode is set by passing a `u8` value to the `enable_mint_burn` runtime argument: `events_mode:u8=1`. The default behavior is `Disabled`.
+This modality is specified by providing an optional runtime argument during installation. The mode is set by passing a `u8` value to the `enable_mint_burn` runtime argument: `--session-arg "enable_mint_burn:u8='1'"`. The default behavior is `Disabled`.
 
-<!-- TODO add an example 
+### Example Installation
 
-**Example**:
+Here is a sample deploy installing a fungible token with event logging and minting and burning enabled:
 
 ```bash
-
+casper-client put-deploy \
+--node-address http://65.21.235.219:7777  \
+--chain-name casper-test \
+--secret-key ~/KEYS/secret_key.pem \
+--payment-amount 120000000000 \
+--session-path ./target/wasm32-unknown-unknown/release/cep18.wasm \
+--session-arg "name:string='Test Token'" \
+--session-arg "symbol:string='DEMO'" \
+--session-arg "total_supply:u256='100'" \
+--session-arg "decimals:u8='2'" \
+--session-arg "events_mode:u8='1'" \
+--session-arg "enable_mint_burn:u8='1'"
 ```
--->
-
-
 
 ## Testing
 
