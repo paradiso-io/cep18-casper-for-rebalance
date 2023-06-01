@@ -4,18 +4,20 @@
 
 1. [Modalities](#modalities)
 
-2. [Testing](#testing)
+2. [Entry Points](#entry-points)
 
-3. [Error Codes](#error-codes)
+3. [Testing](#testing)
 
-4. [Usage](#usage)
+4. [Error Codes](#error-codes)
+
+5. [Usage](#usage)
 
 ## Modalities
 
 The fungible token implementation supports a couple of `modalities` that dictate the behavior of a specific contract instance. Modalities represent the common expectations around contract usage and behavior. The following section discusses the modalities currently available.
 
-<!-- TODO can any of these modalities be changed after installation? 
-If not, add this warning: **IMPORTANT: This mode cannot be changed once the contract has been installed.** -->
+<!-- TODO can any of these modalities be changed after installation? My understanding is NO.
+If this is correct, add this warning: **IMPORTANT: This mode cannot be changed once the contract has been installed.** -->
 
 ### EventsMode
 
@@ -36,13 +38,13 @@ The modality provides two options:
 
 `CES` is an option within the `EventsMode` modality that determines how changes to tokens issued by the contract instance will be recorded. Changes are recorded in the `__events` dictionary and can be observed via a node's Server Side Events stream. They may also be viewed by querying the dictionary at any time using the JSON-RPC interface.
 
-<!-- TODO who creates this dictionary? Is it managed by the casper_event_standard crate? -->
+<!-- TODO who creates this dictionary? Is it created and managed by the casper_event_standard crate? -->
 
 The emitted events are encoded according to the [Casper Event Standard](https://github.com/make-software/casper-event-standard), and the schema is visible to an observer reading the `__events_schema` contract named key.
 
 For this CEP-18 reference implementation, the events schema is as follows:
 
-<!-- TODO check the table with the dev team -->
+<!-- TODO check this table with the dev team. I've extracted from src/events.rs -->
 
 | Event name        | Included values and their type                                 |
 | ----------------- | -------------------------------------------------------------- |
@@ -89,13 +91,44 @@ casper-client put-deploy \
 --session-arg "enable_mint_burn:u8='1'"
 ```
 
+## Entry Points
+
+The Casper CEP-18 Standard follows the [ERC20 Standard](https://eips.ethereum.org/EIPS/eip-20) by implementing the IERC20 interface. The explanations below are summarized from the ERC20 set of interfaces, contracts, and utilities found [here](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20).
+
+* `init` - Entrypoint called only once during contract installation.
+* `allowance` - Returns the number of tokens that a spender can spend on behalf of the owner. The default is zero until `approve` or `transferFrom` are called.
+* `increase_allowance` - Increases the allowance granted to a spender by the caller. This is an alternative to `approve`.
+* `decrease_allowance` - Decreases the allowance granted to a spender by the caller. This is an alternative to `approve`.
+* `approve` - Sets a spender's allowance over the caller’s tokens.
+* `balance_of` - Returns the number of tokens owned by the account specified.
+* `decimals` - Returns the number of decimals used to represent the token to a user. For example, if `decimals` equals `2`, a balance of `505` tokens should be displayed to a user as `5.05`.
+* `name` - Returns the name of the token.
+* `symbol` - Returns the symbol of the token, usually a shorter version of the name; for example, CSPR.
+* `total_supply` - Returns the number of tokens in existence.
+* `transfer` - Moves tokens from the caller to the specified recipient. 
+* `transfer_from` - Moves tokens from the owner to a recipient if the caller has been approved to spend the owner's tokens.
+* `mint` - Creates the number of tokens specified and assigns them to an account, increasing the total supply.
+* `burn` - Destroys the number of tokens specified from an account, reducing the total supply.
+* `change_security` - An entrypoint specific to CEP-18, used for Administration and Security operations. See more details below.
+
+### Changing Security Access
+
+The `change_security` entrypoint manages the security access granted to users. One user can only possess one access group badge. The groups and the change strength are: 
+
+* None > Admin > MintAndBurn > Burner > Minter
+
+For example, if a user is added to both Minter and Admin, they will be an Admin.
+If a user is added to Admin and None, they will be removed from having access rights.
+
+**IMPORTANT: do NOT remove the last Admin, because that will lock out all admin functionality.**
+
 ## Testing
 
-This repository contains several ways of testing the fungible token contract.
+This repository contains several ways of testing the fungible token contract and its entrypoints.
 
 1. The test suite found in the [tests](../tests/) folder asserts the expected behavior of the contract implementation. It also ensures that no regressions and conflicting behaviors are introduced as functionality is added or extended. The tests can be run by using the provided `Makefile` and running the `make test` command.
 
-2. A test contract that calls the entry points in the fungible token contract is also available in the [cep18-test-contract](../cep18-test-contract/) folder.
+2. A test contract that calls the entrypoints in the fungible token contract is also available in the [cep18-test-contract](../cep18-test-contract/) folder.
 
 3. The JavaScript client in the [client-js](../client-js/README.md) folder has unit tests and end-to-end integration tests.
 
@@ -104,7 +137,7 @@ This repository contains several ways of testing the fungible token contract.
 
 ## Error Codes
 
-<!-- TODO check with the dev team if the explanations are correct -->
+<!-- TODO check with the dev team if these explanations are correct. I've extracted from the code. -->
 
 The table below summarizes the [error codes](./src/error.rs) you may see while working with fungible tokens.
 
