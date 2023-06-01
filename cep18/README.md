@@ -19,7 +19,7 @@ If not, add this warning: **IMPORTANT: This mode cannot be changed once the cont
 
 ### EventsMode
 
-The `EventsMode` modality determines how the installed instance of CEP-18 will handle the recording of events that occur from interacting with the contract. The mode is set by passing a `u8` value to the `events_mode` runtime argument. The default behavior is `NoEvents`.
+The `EventsMode` modality determines how the installed instance of CEP-18 will handle the recording of events that occur from interacting with the contract. The mode is set by passing a `u8` value to the `events_mode` runtime argument: `enable_mint_burn:u8=1`. The default behavior is `NoEvents`.
 
 The modality provides two options:
 
@@ -31,17 +31,18 @@ The modality provides two options:
 | NoEvents   | 0   |
 | CES        | 1   |
 
-<!-- TODO test the example -->
+<!-- TODO add an example 
 
 **Example**:
 
 ```bash
 
 ```
+-->
 
 #### The Casper Event Standard
 
-`CES` is an option within the `EventsMode` modality that determines how changes to tokens issued by the contract instance will be recorded. Any changes are recorded in the `__events` dictionary and can be observed via a node's Server Side Events stream. They may also be viewed by querying the dictionary at any time using the JSON-RPC interface.
+`CES` is an option within the `EventsMode` modality that determines how changes to tokens issued by the contract instance will be recorded. Changes are recorded in the `__events` dictionary and can be observed via a node's Server Side Events stream. They may also be viewed by querying the dictionary at any time using the JSON-RPC interface.
 
 <!-- TODO who creates this dictionary? Is it managed by the casper_event_standard crate? -->
 
@@ -75,15 +76,18 @@ The `MintBurn` modality dictates whether tokens managed by a given instance of a
 | Disabled    | 0   |
 | MintAndBurn | 1   |
 
-This modality is specified by providing an optional runtime argument during installation. The mode is set by passing a `u8` value to the `enable_mint_burn` runtime argument. The default behavior is `Disabled`.
+This modality is specified by providing an optional runtime argument during installation. The mode is set by passing a `u8` value to the `enable_mint_burn` runtime argument: `events_mode:u8=1`. The default behavior is `Disabled`.
 
-<!-- TODO test the example -->
+<!-- TODO add an example 
 
 **Example**:
 
 ```bash
 
 ```
+-->
+
+
 
 ## Testing
 
