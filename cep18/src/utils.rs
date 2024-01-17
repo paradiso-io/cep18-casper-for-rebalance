@@ -1,7 +1,6 @@
 //! Implementation details.
-use core::convert::TryInto;
-
-use alloc::{collections::BTreeMap, vec, vec::Vec};
+use crate::alloc::string::ToString;
+use alloc::{collections::BTreeMap, string::String, vec, vec::Vec};
 use casper_contract::{
     contract_api::{
         self,
@@ -17,11 +16,9 @@ use casper_types::{
     system::CallStackElement,
     ApiError, CLTyped, Key, URef, U256,
 };
+use core::convert::TryInto;
 
-use crate::{
-    constants::{SECURITY_BADGES, TOTAL_SUPPLY},
-    error::Cep18Error,
-};
+use crate::{constants::*, error::Cep18Error};
 
 /// Gets [`URef`] under a name.
 pub(crate) fn get_uref(name: &str) -> URef {
@@ -204,4 +201,87 @@ pub fn change_sec_badge(badge_map: &BTreeMap<Key, SecurityBadge>) {
             badge,
         )
     }
+}
+pub fn get_key<T: FromBytes + CLTyped>(name: &str) -> Option<T> {
+    match runtime::get_key(name) {
+        None => None,
+        Some(value) => {
+            let key = value.try_into().unwrap_or_revert();
+            let result = storage::read(key).unwrap_or_revert().unwrap_or_revert();
+            Some(result)
+        }
+    }
+}
+pub fn set_key<T: ToBytes + CLTyped>(name: &str, value: T) {
+    match runtime::get_key(name) {
+        Some(key) => {
+            let key_ref = key.try_into().unwrap_or_revert();
+            storage::write(key_ref, value);
+        }
+        None => {
+            let key = storage::new_uref(value).into();
+            runtime::put_key(name, key);
+        }
+    }
+}
+
+pub fn get_dictionary_value_from_key<T: CLTyped + FromBytes>(
+    dictionary_name: &str,
+    key: &str,
+) -> Option<T> {
+    let seed_uref = get_uref(dictionary_name);
+
+    match storage::dictionary_get::<T>(seed_uref, key) {
+        Ok(maybe_value) => maybe_value,
+        Err(_) => None,
+    }
+}
+
+pub fn write_dictionary_value_from_key<T: CLTyped + FromBytes + ToBytes>(
+    dictionary_name: &str,
+    key: &str,
+    value: T,
+) {
+    let seed_uref = get_uref(dictionary_name);
+
+    match storage::dictionary_get::<T>(seed_uref, key) {
+        Ok(None | Some(_)) => storage::dictionary_put(seed_uref, key, value),
+        Err(error) => runtime::revert(error),
+    }
+}
+pub fn save_mintids(mintid: String) {
+    write_dictionary_value_from_key(MINTIDS, &mintid, mintid.clone());
+}
+
+pub fn read_mintids(mintid: String) -> String {
+    get_dictionary_value_from_key::<String>(MINTIDS, &mintid).unwrap_or_default()
+}
+pub fn save_request_map(unique_id: &String, index: U256) {
+    write_dictionary_value_from_key(REQUEST_MAP, &unique_id, index);
+}
+
+pub fn read_request_map(unique_id: &String) -> U256 {
+    get_dictionary_value_from_key::<U256>(REQUEST_MAP, &unique_id).unwrap_or_default()
+}
+
+pub fn save_swap_fee(swap_fee: U256) {
+    set_key(SWAP_FEE, swap_fee);
+}
+
+pub fn read_swap_fee() -> U256 {
+    get_key(SWAP_FEE).unwrap_or_default()
+}
+pub fn save_fee_receiver(fee_receiver: Key) {
+    set_key(FEE_RECEIVER, fee_receiver);
+}
+
+pub fn read_fee_receiver() -> Key {
+    get_key(FEE_RECEIVER).unwrap_or_revert()
+}
+pub fn save_request_id(request_id: U256) {
+    set_key(REQUEST_ID, request_id);
+}
+
+pub fn read_request_id() -> U256 {
+    get_key(REQUEST_ID).unwrap_or_default()
 }

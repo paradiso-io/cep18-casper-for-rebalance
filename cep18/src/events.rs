@@ -31,6 +31,7 @@ pub enum Event {
     Transfer(Transfer),
     TransferFrom(TransferFrom),
     ChangeSecurity(ChangeSecurity),
+    RequestBridgeBack(RequestBridgeBack),
 }
 
 #[derive(Event, Debug, PartialEq, Eq)]
@@ -89,6 +90,13 @@ pub struct ChangeSecurity {
     pub sec_change_map: BTreeMap<Key, SecurityBadge>,
 }
 
+#[derive(Event, Debug, PartialEq, Eq)]
+pub struct RequestBridgeBack {
+    pub owner: Key,
+    pub amount: U256,
+    pub fee: U256,
+}
+
 fn ces(event: Event) {
     match event {
         Event::Mint(ev) => emit(ev),
@@ -99,6 +107,7 @@ fn ces(event: Event) {
         Event::Transfer(ev) => emit(ev),
         Event::TransferFrom(ev) => emit(ev),
         Event::ChangeSecurity(ev) => emit(ev),
+        Event::RequestBridgeBack(ev) => emit(ev),
     }
 }
 
@@ -115,7 +124,8 @@ pub fn init_events() {
             .with::<DecreaseAllowance>()
             .with::<Transfer>()
             .with::<TransferFrom>()
-            .with::<ChangeSecurity>();
+            .with::<ChangeSecurity>()
+            .with::<RequestBridgeBack>();
         casper_event_standard::init(schemas);
     }
 }

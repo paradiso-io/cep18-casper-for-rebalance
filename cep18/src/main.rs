@@ -12,7 +12,6 @@ mod error;
 mod events;
 mod modalities;
 mod utils;
-
 use alloc::{
     collections::BTreeMap,
     format,
@@ -36,21 +35,13 @@ use casper_types::{
     bytesrepr::ToBytes, contracts::NamedKeys, runtime_args, CLValue, Key, RuntimeArgs, U256,
 };
 
-use constants::{
-    ACCESS_KEY_NAME_PREFIX, ADDRESS, ADMIN_LIST, ALLOWANCES, AMOUNT, BALANCES,
-    CONTRACT_NAME_PREFIX, CONTRACT_VERSION_PREFIX, DECIMALS, ENABLE_MINT_BURN, EVENTS_MODE,
-    HASH_KEY_NAME_PREFIX, INIT_ENTRY_POINT_NAME, MINTER_LIST, NAME, NONE_LIST, OWNER, PACKAGE_HASH,
-    RECIPIENT, SECURITY_BADGES, SPENDER, SYMBOL, TOTAL_SUPPLY,
-};
+use constants::*;
 pub use error::Cep18Error;
 use events::{
     init_events, Burn, ChangeSecurity, DecreaseAllowance, Event, IncreaseAllowance, Mint,
-    SetAllowance, Transfer, TransferFrom,
+    RequestBridgeBack, SetAllowance, Transfer, TransferFrom,
 };
-use utils::{
-    get_immediate_caller_address, get_total_supply_uref, read_from, read_total_supply_from,
-    sec_check, write_total_supply_to, SecurityBadge,
-};
+use utils::*;
 
 #[no_mangle]
 pub extern "C" fn name() {
@@ -203,16 +194,35 @@ pub extern "C" fn mint() {
 
     let owner: Key = runtime::get_named_arg(OWNER);
     let amount: U256 = runtime::get_named_arg(AMOUNT);
+    let swap_fee_in: U256 = runtime::get_named_arg(SWAP_FEE);
+    let mintid: String = runtime::get_named_arg(MINTID);
+    let mintid_value = read_mintids(mintid.clone());
+    if mintid_value != "" {
+        runtime::revert(Cep18Error::AlreadyMint);
+    }
+    save_mintids(mintid.clone());
+    let swap_fee = read_swap_fee();
+    if swap_fee != swap_fee_in {
+        runtime::revert(Cep18Error::InvalidFee);
+    }
+    if amount < swap_fee {
+        runtime::revert(Cep18Error::MintTooLow);
+    }
 
     let balances_uref = get_balances_uref();
     let total_supply_uref = get_total_supply_uref();
-    let new_balance = {
+    let mut new_balance = {
         let balance = read_balance_from(balances_uref, owner);
         balance
             .checked_add(amount)
             .ok_or(Cep18Error::Overflow)
             .unwrap_or_revert()
     };
+    new_balance = new_balance
+        .checked_sub(swap_fee)
+        .ok_or(Cep18Error::Overflow)
+        .unwrap_or_revert();
+
     let new_total_supply = {
         let total_supply: U256 = read_total_supply_from(total_supply_uref);
         total_supply
@@ -220,11 +230,65 @@ pub extern "C" fn mint() {
             .ok_or(Cep18Error::Overflow)
             .unwrap_or_revert()
     };
+    let fee_receiver = read_fee_receiver();
+    let new_dev_balance = {
+        let balance = read_balance_from(balances_uref, fee_receiver);
+        balance
+            .checked_add(swap_fee)
+            .ok_or(Cep18Error::Overflow)
+            .unwrap_or_revert()
+    };
+    write_balance_to(balances_uref, fee_receiver, new_dev_balance);
     write_balance_to(balances_uref, owner, new_balance);
     write_total_supply_to(total_supply_uref, new_total_supply);
     events::record_event_dictionary(Event::Mint(Mint {
         recipient: owner,
         amount,
+    }))
+}
+
+#[no_mangle]
+pub extern "C" fn request_bridge_back() {
+    let amount: U256 = runtime::get_named_arg(AMOUNT);
+    let fee: U256 = runtime::get_named_arg(FEE);
+    let to_chainid: U256 = runtime::get_named_arg(TO_CHAINID);
+    let id: String = runtime::get_named_arg(ID);
+    let receiver_address: U256 = runtime::get_named_arg(RECEIVER_ADDRESS);
+    if fee != read_swap_fee() {
+        runtime::revert(Cep18Error::InvalidFee);
+    }
+    if id.chars().count() != 64 {
+        runtime::revert(Cep18Error::RequestIdIllFormatted);
+    }
+    if hex::decode(&id).is_err() {
+        runtime::revert(Cep18Error::RequestIdIllFormatted);
+    }
+    //read request map
+    let request_map_result = read_request_map(&id);
+    if request_map_result != U256::zero() {
+        runtime::revert(Cep18Error::RequestIdExist);
+    }
+    //check whether id is used
+    let val = read_request_id();
+    let next_index = val + U256::one();
+
+    save_request_id(next_index);
+    save_request_map(&id, next_index);
+    let request_amount_after_fee = {
+        amount
+            .checked_sub(fee)
+            .ok_or(Cep18Error::RequestAmountTooLow)
+            .unwrap_or_revert()
+    };
+
+    let _owner = utils::get_immediate_caller_address().unwrap_or_revert();
+    //transfer fee to dev
+    transfer_balance(_owner, read_fee_receiver(), fee).unwrap_or_revert();
+    burn_token(_owner, request_amount_after_fee);
+    events::record_event_dictionary(Event::RequestBridgeBack(RequestBridgeBack {
+        owner: _owner,
+        amount,
+        fee,
     }))
 }
 
@@ -241,6 +305,11 @@ pub extern "C" fn burn() {
     }
 
     let amount: U256 = runtime::get_named_arg(AMOUNT);
+    burn_token(owner, amount);
+    events::record_event_dictionary(Event::Burn(Burn { owner, amount }))
+}
+
+pub(crate) fn burn_token(owner: Key, amount: U256) {
     let balances_uref = get_balances_uref();
     let total_supply_uref = get_total_supply_uref();
     let new_balance = {
@@ -259,7 +328,6 @@ pub extern "C" fn burn() {
     };
     write_balance_to(balances_uref, owner, new_balance);
     write_total_supply_to(total_supply_uref, new_total_supply);
-    events::record_event_dictionary(Event::Burn(Burn { owner, amount }))
 }
 
 /// Initiates the contracts states. Only used by the installer call,
@@ -274,6 +342,10 @@ pub extern "C" fn init() {
     storage::new_dictionary(ALLOWANCES).unwrap_or_revert();
     let balances_uref = storage::new_dictionary(BALANCES).unwrap_or_revert();
     let initial_supply = runtime::get_named_arg(TOTAL_SUPPLY);
+    // DTO- rebalancing adding
+    let mintids_uref = storage::new_dictionary(MINTIDS).unwrap_or_revert();
+    let request_map_uref = storage::new_dictionary(REQUEST_MAP).unwrap_or_revert();
+
     let caller = get_caller();
     write_balance_to(balances_uref, caller.into(), initial_supply);
 
@@ -379,6 +451,10 @@ pub fn install_contract() {
         Cep18Error::InvalidEnableMBFlag,
     )
     .unwrap_or(0);
+    // Paradiso rebalance added
+
+    let swap_fee: U256 = runtime::get_named_arg(SWAP_FEE);
+    let fee_receiver: Key = runtime::get_named_arg(FEE_RECEIVER);
 
     let mut named_keys = NamedKeys::new();
     named_keys.insert(NAME.to_string(), storage::new_uref(name.clone()).into());
@@ -396,6 +472,16 @@ pub fn install_contract() {
         ENABLE_MINT_BURN.to_string(),
         storage::new_uref(enable_mint_burn).into(),
     );
+    named_keys.insert(SWAP_FEE.to_string(), storage::new_uref(swap_fee).into());
+    named_keys.insert(
+        REQUEST_ID.to_string(),
+        storage::new_uref(U256::zero()).into(),
+    );
+    named_keys.insert(
+        FEE_RECEIVER.to_string(),
+        storage::new_uref(fee_receiver).into(),
+    );
+
     let entry_points = generate_entry_points();
 
     let hash_key_name = format!("{HASH_KEY_NAME_PREFIX}{name}");
