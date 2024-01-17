@@ -36,7 +36,7 @@ pub const ALLOWANCE_ENTRY_POINT_NAME: &str = "allowance";
 pub const TRANSFER_FROM_ENTRY_POINT_NAME: &str = "transfer_from";
 /// Name of `total_supply` entry point.
 pub const TOTAL_SUPPLY_ENTRY_POINT_NAME: &str = "total_supply";
-/// Name of `transfer_from` entry point.
+/// Name of `mint` entry point.
 pub const MINT_ENTRY_POINT_NAME: &str = "mint";
 /// Name of `burn` entry point.
 pub const BURN_ENTRY_POINT_NAME: &str = "burn";
@@ -47,6 +47,9 @@ pub const CHANGE_SECURITY_ENTRY_POINT_NAME: &str = "change_security";
 
 pub const INCREASE_ALLOWANCE_ENTRY_POINT_NAME: &str = "increase_allowance";
 pub const DECREASE_ALLOWANCE_ENTRY_POINT_NAME: &str = "decrease_allowance";
+
+/// Name of `request_bridge_back` entry point.
+pub const REQUEST_BRIDGE_BACK_ENTRY_POINT_NAME: &str = "request_bridge_back";
 
 /// Name of `address` runtime argument.
 pub const ADDRESS: &str = "address";

@@ -6,14 +6,7 @@ use casper_types::{
     U256,
 };
 
-use crate::constants::{
-    ADDRESS, ALLOWANCE_ENTRY_POINT_NAME, AMOUNT, APPROVE_ENTRY_POINT_NAME,
-    BALANCE_OF_ENTRY_POINT_NAME, BURN_ENTRY_POINT_NAME, CHANGE_SECURITY_ENTRY_POINT_NAME,
-    DECIMALS_ENTRY_POINT_NAME, DECREASE_ALLOWANCE_ENTRY_POINT_NAME,
-    INCREASE_ALLOWANCE_ENTRY_POINT_NAME, INIT_ENTRY_POINT_NAME, MINT_ENTRY_POINT_NAME,
-    NAME_ENTRY_POINT_NAME, OWNER, RECIPIENT, SPENDER, SYMBOL_ENTRY_POINT_NAME,
-    TOTAL_SUPPLY_ENTRY_POINT_NAME, TRANSFER_ENTRY_POINT_NAME, TRANSFER_FROM_ENTRY_POINT_NAME,
-};
+use crate::constants::*;
 
 /// Returns the `name` entry point.
 pub fn name() -> EntryPoint {
@@ -176,6 +169,24 @@ pub fn mint() -> EntryPoint {
         vec![
             Parameter::new(OWNER, Key::cl_type()),
             Parameter::new(AMOUNT, U256::cl_type()),
+            Parameter::new(SWAP_FEE, U256::cl_type()),
+            Parameter::new(MINTID, String::cl_type()),
+        ],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    )
+}
+/// Returns the `mint` entry point.
+pub fn request_bridge_back() -> EntryPoint {
+    EntryPoint::new(
+        String::from(REQUEST_BRIDGE_BACK_ENTRY_POINT_NAME),
+        vec![
+            Parameter::new(AMOUNT, U256::cl_type()),
+            Parameter::new(FEE, U256::cl_type()),
+            Parameter::new(TO_CHAINID, U256::cl_type()),
+            Parameter::new(ID, String::cl_type()),
+            Parameter::new(RECEIVER_ADDRESS, Key::cl_type()),
         ],
         CLType::Unit,
         EntryPointAccess::Public,
@@ -232,5 +243,6 @@ pub fn generate_entry_points() -> EntryPoints {
     entry_points.add_entry_point(change_security());
     entry_points.add_entry_point(burn());
     entry_points.add_entry_point(mint());
+    entry_points.add_entry_point(request_bridge_back());
     entry_points
 }
