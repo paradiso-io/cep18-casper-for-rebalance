@@ -31,6 +31,7 @@ pub const TOKEN_TOTAL_SUPPLY: u64 = 1_000_000_000;
 pub const METHOD_TRANSFER: &str = "transfer";
 pub const ARG_AMOUNT: &str = "amount";
 pub const ARG_RECIPIENT: &str = "recipient";
+pub const RECIPIENT: &str = "recipient";
 
 pub const METHOD_APPROVE: &str = "approve";
 pub const ARG_OWNER: &str = "owner";

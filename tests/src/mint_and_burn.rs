@@ -2,15 +2,9 @@ use casper_engine_test_support::{ExecuteRequestBuilder, DEFAULT_ACCOUNT_ADDR};
 use casper_types::{runtime_args, ApiError, Key, RuntimeArgs, U256};
 
 use crate::utility::{
-    constants::{
-        ACCOUNT_1_ADDR, ADMIN_LIST, AMOUNT, ARG_AMOUNT, ARG_DECIMALS, ARG_NAME, ARG_OWNER,
-        ARG_SYMBOL, ARG_TOTAL_SUPPLY, CHANGE_SECURITY, ENABLE_MINT_BURN,
-        ERROR_INSUFFICIENT_BALANCE, ERROR_OVERFLOW, METHOD_BURN, METHOD_MINT, MINTER_LIST,
-        NONE_LIST, OWNER, TOKEN_DECIMALS, TOKEN_NAME, TOKEN_OWNER_ADDRESS_1, TOKEN_OWNER_ADDRESS_2,
-        TOKEN_OWNER_AMOUNT_1, TOKEN_OWNER_AMOUNT_2, TOKEN_SYMBOL, TOKEN_TOTAL_SUPPLY,
-    },
+    constants::*,
     installer_request_builders::{
-        cep18_check_balance_of, cep18_check_total_supply, setup_with_args, TestContext,
+        cep18_check_balance_of, cep18_check_total_supply, setup, setup_with_args, TestContext,
     },
 };
 
@@ -22,18 +16,15 @@ use casper_execution_engine::core::{
 fn test_mint_and_burn_tokens() {
     let mint_amount = U256::one();
 
-    let (mut builder, TestContext { cep18_token, .. }) = setup_with_args(runtime_args! {
-        ARG_NAME => TOKEN_NAME,
-        ARG_SYMBOL => TOKEN_SYMBOL,
-        ARG_DECIMALS => TOKEN_DECIMALS,
-        ARG_TOTAL_SUPPLY => U256::from(TOKEN_TOTAL_SUPPLY),
-        ENABLE_MINT_BURN => true,
-    });
+    let (mut builder, TestContext { cep18_token, .. }) = setup();
+    println!("a");
+    println!("{}", *DEFAULT_ACCOUNT_ADDR);
+
     let mint_request = ExecuteRequestBuilder::contract_call_by_hash(
         *DEFAULT_ACCOUNT_ADDR,
         cep18_token,
         METHOD_MINT,
-        runtime_args! {OWNER => TOKEN_OWNER_ADDRESS_1, AMOUNT => U256::from(TOKEN_OWNER_AMOUNT_1)},
+        runtime_args! {RECIPIENT => TOKEN_OWNER_ADDRESS_1, AMOUNT => U256::from(TOKEN_OWNER_AMOUNT_1), SWAP_FEE => U256::zero(), MINTID => "123".to_string()},
     )
     .build();
     builder.exec(mint_request).expect_success().commit();
@@ -41,10 +32,15 @@ fn test_mint_and_burn_tokens() {
         *DEFAULT_ACCOUNT_ADDR,
         cep18_token,
         METHOD_MINT,
-        runtime_args! {OWNER => TOKEN_OWNER_ADDRESS_2, AMOUNT => U256::from(TOKEN_OWNER_AMOUNT_2)},
+        runtime_args! {RECIPIENT => TOKEN_OWNER_ADDRESS_2, AMOUNT => U256::from(TOKEN_OWNER_AMOUNT_2),SWAP_FEE => U256::zero(), MINTID => "1234".to_string()},
     )
     .build();
     builder.exec(mint_request_2).expect_success().commit();
+    println!(
+        "mint gas {:?}",
+        builder.last_exec_gas_cost().value().as_u128() / 1_000_000_000_u128
+    );
+
     assert_eq!(
         cep18_check_balance_of(
             &mut builder,
@@ -68,8 +64,11 @@ fn test_mint_and_burn_tokens() {
         cep18_token,
         METHOD_MINT,
         runtime_args! {
-            ARG_OWNER => TOKEN_OWNER_ADDRESS_1,
+            RECIPIENT => TOKEN_OWNER_ADDRESS_1,
             ARG_AMOUNT => mint_amount,
+            SWAP_FEE => U256::zero(),
+            MINTID => "0x703ed6891a882d9d4821367b3ab62ebdebaa87303c6d1642874212e7519a81eb-43113-96945816564243-83-0x6fa6fa85d692f6956064c398c3918a4bff2c1de3-43113".to_string()
+
         },
     )
     .build();
@@ -124,6 +123,7 @@ fn test_mint_and_burn_tokens() {
     );
 
     assert_eq!(total_supply_after_burn, total_supply_before_mint);
+    assert_eq!(1, 2);
 }
 
 #[test]

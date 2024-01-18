@@ -256,11 +256,12 @@ pub fn write_dictionary_value_from_key<T: CLTyped + FromBytes + ToBytes>(
     }
 }
 pub fn save_mintids(mintid: String) {
-    write_dictionary_value_from_key(MINTIDS, &mintid, mintid.clone());
+    write_dictionary_value_from_key(MINTIDS, &make_dictionary_item_key(&mintid), 1_u8);
 }
 
-pub fn read_mintids(mintid: String) -> String {
-    get_dictionary_value_from_key::<String>(MINTIDS, &mintid).unwrap_or_default()
+pub fn read_mintids(mintid: String) -> u8 {
+    get_dictionary_value_from_key::<u8>(MINTIDS, &make_dictionary_item_key(&mintid))
+        .unwrap_or_default()
 }
 pub fn save_request_map(unique_id: &String, index: U256) {
     write_dictionary_value_from_key(REQUEST_MAP, &unique_id, index);
@@ -293,4 +294,9 @@ pub fn read_request_id() -> U256 {
 }
 pub fn log_msg(_msg: &str) {
     // runtime::print(_msg);
+}
+fn make_dictionary_item_key(mintid: &String) -> String {
+    let preimage = mintid.as_bytes();
+    let key_bytes = runtime::blake2b(&preimage);
+    hex::encode(&key_bytes)
 }

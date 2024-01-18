@@ -40,8 +40,8 @@ pub(crate) fn setup() -> (InMemoryWasmTestBuilder, TestContext) {
         ARG_TOTAL_SUPPLY => U256::from(TOKEN_TOTAL_SUPPLY),
         EVENTS_MODE => 1_u8,
         ENABLE_MINT_BURN =>1_u8,
-        ADMIN_LIST => vec![Key::from(TOKEN_OWNER_ADDRESS_1)],
-        MINTER_LIST => vec![Key::from(TOKEN_OWNER_ADDRESS_1)],
+        ADMIN_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
+        MINTER_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
         SWAP_FEE => U256::from(0),
         FEE_RECEIVER => Key::from(TOKEN_OWNER_ADDRESS_1)
     })

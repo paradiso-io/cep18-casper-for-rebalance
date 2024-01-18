@@ -21,7 +21,7 @@ test: setup-test
 	cd tests && cargo test
 
 test-specific: setup-test
-	cd tests && cargo test -p tests should_have_queryable_properties
+	cd tests && cargo test -p tests test_mint_and_burn_tokens
 
 
 clippy:
