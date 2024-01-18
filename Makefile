@@ -20,6 +20,10 @@ setup-test: build-contract
 test: setup-test
 	cd tests && cargo test
 
+test-specific: setup-test
+	cd tests && cargo test -p tests should_have_queryable_properties
+
+
 clippy:
 	cd cep18 && cargo clippy --all-targets -- -D warnings
 	cd cep18-test-contract && cargo clippy --all-targets -- -D warnings

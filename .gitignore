@@ -93,7 +93,7 @@ node_modules/
 *.tgz
 
 # dotenv environment variable files
-.env
+*.env
 .env.development.local
 .env.test.local
 .env.production.local
@@ -110,3 +110,9 @@ node_modules/
 dist
 
 tests/wasm
+
+scripts
+
+package.json
+package-lock.json
+yarn.lock

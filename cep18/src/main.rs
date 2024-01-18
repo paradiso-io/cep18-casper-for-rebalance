@@ -190,7 +190,7 @@ pub extern "C" fn mint() {
         revert(Cep18Error::MintBurnDisabled);
     }
 
-    sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
+    sec_check(vec![SecurityBadge::Minter]);
 
     let recipient: Key = runtime::get_named_arg(RECIPIENT);
     let amount: U256 = runtime::get_named_arg(AMOUNT);
@@ -348,11 +348,10 @@ pub extern "C" fn init() {
 
     let caller = get_caller();
     write_balance_to(balances_uref, caller.into(), initial_supply);
-
     let security_badges_dict = storage::new_dictionary(SECURITY_BADGES).unwrap_or_revert();
     dictionary_put(
         security_badges_dict,
-        &base64::encode(Key::from(get_caller()).to_bytes().unwrap_or_revert()),
+        &make_dictionary_item_key_for_account(Key::from(get_caller())),
         SecurityBadge::Admin,
     );
 
@@ -367,20 +366,22 @@ pub extern "C" fn init() {
         for minter in minter_list {
             dictionary_put(
                 security_badges_dict,
-                &base64::encode(minter.to_bytes().unwrap_or_revert()),
+                &make_dictionary_item_key_for_account(minter),
                 SecurityBadge::Minter,
             );
         }
     }
+
     if let Some(admin_list) = admin_list {
         for admin in admin_list {
             dictionary_put(
                 security_badges_dict,
-                &base64::encode(admin.to_bytes().unwrap_or_revert()),
+                &make_dictionary_item_key_for_account(admin),
                 SecurityBadge::Admin,
             );
         }
     }
+    log_msg("init 7");
 }
 
 /// Admin EntryPoint to manipulate the security access granted to users.
@@ -424,7 +425,7 @@ pub extern "C" fn change_security() {
 
     utils::change_sec_badge(&badge_map);
     events::record_event_dictionary(Event::ChangeSecurity(ChangeSecurity {
-        admin: get_immediate_caller_address().unwrap_or_revert(),
+        admin: utils::get_immediate_caller_address().unwrap_or_revert(),
         sec_change_map: badge_map,
     }));
 }
@@ -440,11 +441,12 @@ pub fn install_contract() {
     let events_mode: u8 =
         utils::get_optional_named_arg_with_user_errors(EVENTS_MODE, Cep18Error::InvalidEventsMode)
             .unwrap_or(0u8);
-
+    log_msg("a");
     let admin_list: Option<Vec<Key>> =
         utils::get_optional_named_arg_with_user_errors(ADMIN_LIST, Cep18Error::InvalidAdminList);
     let minter_list: Option<Vec<Key>> =
         utils::get_optional_named_arg_with_user_errors(MINTER_LIST, Cep18Error::InvalidMinterList);
+    log_msg("b");
 
     let enable_mint_burn: u8 = utils::get_optional_named_arg_with_user_errors(
         ENABLE_MINT_BURN,
@@ -452,6 +454,7 @@ pub fn install_contract() {
     )
     .unwrap_or(0);
     // Paradiso rebalance added
+    log_msg("c");
 
     let swap_fee: U256 = runtime::get_named_arg(SWAP_FEE);
     let fee_receiver: Key = runtime::get_named_arg(FEE_RECEIVER);
