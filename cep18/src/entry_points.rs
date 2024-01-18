@@ -167,7 +167,7 @@ pub fn mint() -> EntryPoint {
     EntryPoint::new(
         String::from(MINT_ENTRY_POINT_NAME),
         vec![
-            Parameter::new(OWNER, Key::cl_type()),
+            Parameter::new(RECIPIENT, Key::cl_type()),
             Parameter::new(AMOUNT, U256::cl_type()),
             Parameter::new(SWAP_FEE, U256::cl_type()),
             Parameter::new(MINTID, String::cl_type()),

@@ -192,7 +192,7 @@ pub extern "C" fn mint() {
 
     sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
 
-    let owner: Key = runtime::get_named_arg(OWNER);
+    let recipient: Key = runtime::get_named_arg(RECIPIENT);
     let amount: U256 = runtime::get_named_arg(AMOUNT);
     let swap_fee_in: U256 = runtime::get_named_arg(SWAP_FEE);
     let mintid: String = runtime::get_named_arg(MINTID);
@@ -212,7 +212,7 @@ pub extern "C" fn mint() {
     let balances_uref = get_balances_uref();
     let total_supply_uref = get_total_supply_uref();
     let mut new_balance = {
-        let balance = read_balance_from(balances_uref, owner);
+        let balance = read_balance_from(balances_uref, recipient);
         balance
             .checked_add(amount)
             .ok_or(Cep18Error::Overflow)
@@ -239,10 +239,10 @@ pub extern "C" fn mint() {
             .unwrap_or_revert()
     };
     write_balance_to(balances_uref, fee_receiver, new_dev_balance);
-    write_balance_to(balances_uref, owner, new_balance);
+    write_balance_to(balances_uref, recipient, new_balance);
     write_total_supply_to(total_supply_uref, new_total_supply);
     events::record_event_dictionary(Event::Mint(Mint {
-        recipient: owner,
+        recipient: recipient,
         amount,
     }))
 }
