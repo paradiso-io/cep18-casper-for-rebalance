@@ -190,8 +190,8 @@ pub extern "C" fn mint() {
         revert(Cep18Error::MintBurnDisabled);
     }
 
-    // sec_check(vec![SecurityBadge::Minter]);
-    sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
+    sec_check(vec![SecurityBadge::Minter]);
+    // sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
 
     let recipient: Key = runtime::get_named_arg(RECIPIENT);
     let amount: U256 = runtime::get_named_arg(AMOUNT);
