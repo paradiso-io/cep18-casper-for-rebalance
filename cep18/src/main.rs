@@ -39,7 +39,7 @@ use constants::*;
 pub use error::Cep18Error;
 use events::{
     init_events, Burn, ChangeSecurity, DecreaseAllowance, Event, IncreaseAllowance, Mint,
-    RequestBridgeBack, SetAllowance, Transfer, TransferFrom,
+    ParadisoMint, RequestBridgeBack, SetAllowance, Transfer, TransferFrom,
 };
 use utils::*;
 
@@ -190,8 +190,8 @@ pub extern "C" fn mint() {
         revert(Cep18Error::MintBurnDisabled);
     }
 
-    sec_check(vec![SecurityBadge::Minter]);
-    // sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
+    // sec_check(vec![SecurityBadge::Minter]);
+    sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
 
     let recipient: Key = runtime::get_named_arg(RECIPIENT);
     let amount: U256 = runtime::get_named_arg(AMOUNT);
@@ -242,6 +242,11 @@ pub extern "C" fn mint() {
     write_balance_to(balances_uref, fee_receiver, new_dev_balance);
     write_balance_to(balances_uref, recipient, new_balance);
     write_total_supply_to(total_supply_uref, new_total_supply);
+    events::record_event_dictionary(Event::ParadisoMint(ParadisoMint {
+        recipient: recipient,
+        amount,
+        mintid,
+    }));
     events::record_event_dictionary(Event::Mint(Mint {
         recipient: recipient,
         amount,
@@ -254,7 +259,7 @@ pub extern "C" fn request_bridge_back() {
     let fee: U256 = runtime::get_named_arg(FEE);
     let to_chainid: U256 = runtime::get_named_arg(TO_CHAINID);
     let id: String = runtime::get_named_arg(ID);
-    let receiver_address: U256 = runtime::get_named_arg(RECEIVER_ADDRESS);
+    let receiver_address: Key = runtime::get_named_arg(RECEIVER_ADDRESS);
     if fee != read_swap_fee() {
         runtime::revert(Cep18Error::InvalidFee);
     }
@@ -290,6 +295,9 @@ pub extern "C" fn request_bridge_back() {
         owner: _owner,
         amount,
         fee,
+        id,
+        receiver_address,
+        to_chainid,
     }))
 }
 

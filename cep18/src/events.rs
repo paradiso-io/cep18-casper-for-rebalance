@@ -1,6 +1,6 @@
 use core::convert::TryFrom;
 
-use alloc::collections::BTreeMap;
+use alloc::{collections::BTreeMap, string::String};
 use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{Key, U256};
 
@@ -32,12 +32,20 @@ pub enum Event {
     TransferFrom(TransferFrom),
     ChangeSecurity(ChangeSecurity),
     RequestBridgeBack(RequestBridgeBack),
+    ParadisoMint(ParadisoMint),
 }
 
 #[derive(Event, Debug, PartialEq, Eq)]
 pub struct Mint {
     pub recipient: Key,
     pub amount: U256,
+}
+
+#[derive(Event, Debug, PartialEq, Eq)]
+pub struct ParadisoMint {
+    pub recipient: Key,
+    pub amount: U256,
+    pub mintid: String,
 }
 
 #[derive(Event, Debug, PartialEq, Eq)]
@@ -95,6 +103,9 @@ pub struct RequestBridgeBack {
     pub owner: Key,
     pub amount: U256,
     pub fee: U256,
+    pub receiver_address: Key,
+    pub to_chainid: U256,
+    pub id: String,
 }
 
 fn ces(event: Event) {
@@ -108,6 +119,7 @@ fn ces(event: Event) {
         Event::TransferFrom(ev) => emit(ev),
         Event::ChangeSecurity(ev) => emit(ev),
         Event::RequestBridgeBack(ev) => emit(ev),
+        Event::ParadisoMint(ev) => emit(ev),
     }
 }
 
@@ -125,6 +137,7 @@ pub fn init_events() {
             .with::<Transfer>()
             .with::<TransferFrom>()
             .with::<ChangeSecurity>()
+            .with::<ParadisoMint>()
             .with::<RequestBridgeBack>();
         casper_event_standard::init(schemas);
     }
