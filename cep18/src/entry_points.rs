@@ -186,7 +186,7 @@ pub fn request_bridge_back() -> EntryPoint {
             Parameter::new(FEE, U256::cl_type()),
             Parameter::new(TO_CHAINID, U256::cl_type()),
             Parameter::new(ID, String::cl_type()),
-            Parameter::new(RECEIVER_ADDRESS, Key::cl_type()),
+            Parameter::new(RECEIVER_ADDRESS, String::cl_type()),
         ],
         CLType::Unit,
         EntryPointAccess::Public,
