@@ -68,9 +68,12 @@ pub(crate) fn setup_with_args(install_args: RuntimeArgs) -> (InMemoryWasmTestBui
     let transfer_request_2 =
         ExecuteRequestBuilder::transfer(*DEFAULT_ACCOUNT_ADDR, transfer_2_args).build();
 
-    let install_request_1 =
-        ExecuteRequestBuilder::standard(*DEFAULT_ACCOUNT_ADDR, CEP18_CONTRACT_WASM, install_args)
-            .build();
+    let install_request_1 = ExecuteRequestBuilder::standard(
+        *DEFAULT_ACCOUNT_ADDR,
+        CEP18_CONTRACT_WASM,
+        install_args.clone(),
+    )
+    .build();
 
     let install_request_2 = ExecuteRequestBuilder::standard(
         *DEFAULT_ACCOUNT_ADDR,
@@ -78,11 +81,18 @@ pub(crate) fn setup_with_args(install_args: RuntimeArgs) -> (InMemoryWasmTestBui
         RuntimeArgs::default(),
     )
     .build();
+    let install_request_3 = ExecuteRequestBuilder::standard(
+        *DEFAULT_ACCOUNT_ADDR,
+        CEP18_TEST_CONTRACT_WASM,
+        install_args,
+    )
+    .build();
 
     builder.exec(transfer_request_1).expect_success().commit();
     builder.exec(transfer_request_2).expect_success().commit();
     builder.exec(install_request_1).expect_success().commit();
     builder.exec(install_request_2).expect_success().commit();
+    builder.exec(install_request_3).expect_success().commit();
 
     let account = builder
         .get_account(*DEFAULT_ACCOUNT_ADDR)
@@ -110,6 +120,16 @@ pub(crate) fn setup_with_args(install_args: RuntimeArgs) -> (InMemoryWasmTestBui
     (builder, test_context)
 }
 
+pub(crate) fn deploy_cep18(builder: &mut InMemoryWasmTestBuilder, install_args: RuntimeArgs) {
+    let install_request_3 =
+        ExecuteRequestBuilder::standard(*DEFAULT_ACCOUNT_ADDR, CEP18_CONTRACT_WASM, install_args)
+            .build();
+    builder.exec(install_request_3).expect_success().commit();
+    println!(
+        "deploy cep18 gas {:?}",
+        builder.last_exec_gas_cost().value().as_u128() / 1_000_000_000_u128
+    );
+}
 pub(crate) fn cep18_check_total_supply(
     builder: &mut InMemoryWasmTestBuilder,
     cep18_contract_hash: &ContractHash,

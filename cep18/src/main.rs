@@ -19,11 +19,8 @@ use alloc::{
     vec,
     vec::Vec,
 };
-
 use allowances::{get_allowances_uref, read_allowance_from, write_allowance_to};
 use balances::{get_balances_uref, read_balance_from, transfer_balance, write_balance_to};
-use entry_points::generate_entry_points;
-
 use casper_contract::{
     contract_api::{
         runtime::{self, get_caller, get_key, get_named_arg, put_key, revert},
@@ -32,8 +29,10 @@ use casper_contract::{
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casper_types::{
-    bytesrepr::ToBytes, contracts::NamedKeys, runtime_args, CLValue, Key, RuntimeArgs, U256,
+    bytesrepr::ToBytes, contracts::NamedKeys, runtime_args, CLValue, ContractHash,
+    ContractPackageHash, Key, RuntimeArgs, U256,
 };
+use entry_points::generate_entry_points;
 
 use constants::*;
 pub use error::Cep18Error;
@@ -259,7 +258,7 @@ pub extern "C" fn request_bridge_back() {
     let fee: U256 = runtime::get_named_arg(FEE);
     let to_chainid: U256 = runtime::get_named_arg(TO_CHAINID);
     let id: String = runtime::get_named_arg(ID);
-    let receiver_address: Key = runtime::get_named_arg(RECEIVER_ADDRESS);
+    let receiver_address: String = runtime::get_named_arg(RECEIVER_ADDRESS);
     if fee != read_swap_fee() {
         runtime::revert(Cep18Error::InvalidFee);
     }
@@ -527,5 +526,43 @@ pub fn install_contract() {
 
 #[no_mangle]
 pub extern "C" fn call() {
-    install_contract()
+    // contract_name should be the name of cep18 token
+    let name: String = runtime::get_named_arg(NAME);
+    let hash_key_name = format!("{HASH_KEY_NAME_PREFIX}{name}");
+
+    if !runtime::has_key(&hash_key_name) {
+        log_msg("install the first time");
+
+        // install contract
+        install_contract()
+    } else {
+        log_msg("NOW upgrade contract");
+
+        // upgrade contract
+        // let hash_key_name = format!("{HASH_KEY_NAME_PREFIX}{name}");
+        let package_hash: ContractPackageHash = runtime::get_key(&hash_key_name)
+            .unwrap_or_revert()
+            .into_hash()
+            .unwrap()
+            .into();
+        let old_contract_hash: ContractHash =
+            runtime::get_key(&format!("{CONTRACT_NAME_PREFIX}{name}"))
+                .unwrap_or_revert()
+                .into_hash()
+                .unwrap()
+                .into();
+        let (contract_hash, contract_version) =
+            storage::add_contract_version(package_hash, generate_entry_points(), NamedKeys::new());
+
+        storage::disable_contract_version(package_hash, old_contract_hash).unwrap_or_revert();
+
+        runtime::put_key(
+            &format!("{CONTRACT_NAME_PREFIX}{name}"),
+            contract_hash.into(),
+        );
+        runtime::put_key(
+            &format!("{CONTRACT_VERSION_PREFIX}{name}"),
+            storage::new_uref(contract_version).into(),
+        );
+    }
 }

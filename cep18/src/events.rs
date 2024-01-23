@@ -103,7 +103,7 @@ pub struct RequestBridgeBack {
     pub owner: Key,
     pub amount: U256,
     pub fee: U256,
-    pub receiver_address: Key,
+    pub receiver_address: String,
     pub to_chainid: U256,
     pub id: String,
 }

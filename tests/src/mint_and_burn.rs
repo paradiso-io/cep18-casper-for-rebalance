@@ -4,7 +4,8 @@ use casper_types::{runtime_args, ApiError, Key, RuntimeArgs, U256};
 use crate::utility::{
     constants::*,
     installer_request_builders::{
-        cep18_check_balance_of, cep18_check_total_supply, setup, setup_with_args, TestContext,
+        cep18_check_balance_of, cep18_check_total_supply, deploy_cep18, setup, setup_with_args,
+        TestContext,
     },
 };
 
@@ -19,6 +20,21 @@ fn test_mint_and_burn_tokens() {
     let (mut builder, TestContext { cep18_token, .. }) = setup();
     println!("a");
     println!("{}", *DEFAULT_ACCOUNT_ADDR);
+    // upgrade
+    let args = runtime_args! {
+        ARG_NAME => TOKEN_NAME,
+        ARG_SYMBOL => TOKEN_SYMBOL,
+        ARG_DECIMALS => TOKEN_DECIMALS,
+        ARG_TOTAL_SUPPLY => U256::from(TOKEN_TOTAL_SUPPLY),
+        EVENTS_MODE => 1_u8,
+        ENABLE_MINT_BURN =>1_u8,
+        ADMIN_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
+        MINTER_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
+        SWAP_FEE => U256::from(0),
+        FEE_RECEIVER => Key::from(TOKEN_OWNER_ADDRESS_1)
+    };
+    deploy_cep18(&mut builder, args);
+    println!("done deploy upgrage");
 
     let mint_request = ExecuteRequestBuilder::contract_call_by_hash(
         *DEFAULT_ACCOUNT_ADDR,

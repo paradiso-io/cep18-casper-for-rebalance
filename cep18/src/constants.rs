@@ -1,4 +1,6 @@
 //! Constants used by the CEP-18 contract.
+/// Name of named-key for `name`.
+pub const CONTRACT_NAME: &str = "contract_name";
 
 /// Name of named-key for `name`.
 pub const NAME: &str = "name";
@@ -80,3 +82,6 @@ pub const FEE: &str = "fee";
 pub const TO_CHAINID: &str = "to_chainid";
 pub const RECEIVER_ADDRESS: &str = "receiver_address";
 pub const ID: &str = "id";
+pub const CONTRACT_OWNER_KEY_NAME: &str = "contract_owner";
+pub const ARG_CONTRACT_OWNER: &str = "contract_owner";
+pub const TRANSFER_OWNER_ENTRY_POINT_NAME: &str = "transfer_owner";

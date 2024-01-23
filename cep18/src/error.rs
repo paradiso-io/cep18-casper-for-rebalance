@@ -53,6 +53,7 @@ pub enum Cep18Error {
     RequestIdIllFormatted = 60022,
     RequestIdExist = 60023,
     RequestAmountTooLow = 60024,
+    OnlyOwnerCanRevoke = 60025,
 }
 
 impl From<Cep18Error> for ApiError {
