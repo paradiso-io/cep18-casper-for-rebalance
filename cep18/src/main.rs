@@ -189,8 +189,8 @@ pub extern "C" fn mint() {
         revert(Cep18Error::MintBurnDisabled);
     }
 
-    sec_check(vec![SecurityBadge::Minter]);
-    // sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
+    // sec_check(vec![SecurityBadge::Minter]);
+    sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
 
     let recipient: Key = runtime::get_named_arg(RECIPIENT);
     let amount: U256 = runtime::get_named_arg(AMOUNT);
@@ -352,7 +352,6 @@ pub extern "C" fn init() {
     storage::new_dictionary(MINTIDS).unwrap_or_revert();
     storage::new_dictionary(REQUEST_MAP).unwrap_or_revert();
     let supported_chains_dict = storage::new_dictionary(SUPPORTED_CHAINS).unwrap_or_revert();
-
     let caller = get_caller();
     write_balance_to(balances_uref, caller.into(), initial_supply);
     let security_badges_dict = storage::new_dictionary(SECURITY_BADGES).unwrap_or_revert();
@@ -452,6 +451,16 @@ pub extern "C" fn change_swap_fee() {
     sec_check(vec![SecurityBadge::Admin]);
     let swap_fee: U256 = runtime::get_named_arg(SWAP_FEE);
     save_swap_fee(swap_fee);
+}
+
+#[no_mangle]
+pub extern "C" fn set_supported_chains() {
+    sec_check(vec![SecurityBadge::Admin]);
+    let supported_chains: Vec<U256> = runtime::get_named_arg(SUPPORTED_CHAINS);
+    let is_supported: bool = runtime::get_named_arg(IS_SUPPORTED);
+    for chain in supported_chains {
+        write_dictionary_value_from_key(SUPPORTED_CHAINS, &chain.to_string(), is_supported);
+    }
 }
 
 #[no_mangle]

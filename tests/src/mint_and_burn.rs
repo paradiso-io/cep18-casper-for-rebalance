@@ -149,7 +149,7 @@ fn test_mint_and_burn_tokens() {
         runtime_args! {
             "amount" => mint_amount,
             "fee" => U256::zero(),
-            "to_chainid" => U256::from(1),
+            "to_chainid" => U256::from(97),
             "id" => "636363".to_string(),
             "receiver_address"=> "0x000000000".to_string()
 
@@ -158,7 +158,21 @@ fn test_mint_and_burn_tokens() {
     .build();
 
     builder.exec(request_bridge_back).expect_success().commit();
-    println!("Done request_bridge_back")
+    println!("Done request_bridge_back");
+    let set_supported_chains = ExecuteRequestBuilder::contract_call_by_hash(
+        *DEFAULT_ACCOUNT_ADDR,
+        cep18_token,
+        "set_supported_chains",
+        runtime_args! {
+            "supported_chains" => vec![U256::from(1), U256::from(97)],
+            "is_supported"=> false
+
+        },
+    )
+    .build();
+
+    builder.exec(set_supported_chains).expect_success().commit();
+    println!("Done set_supported_chains")
 }
 
 #[test]

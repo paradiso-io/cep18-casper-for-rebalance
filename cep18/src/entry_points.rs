@@ -1,5 +1,5 @@
 //! Contains definition of the entry points.
-use alloc::{string::String, vec, vec::Vec};
+use alloc::{boxed::Box, string::String, vec, vec::Vec};
 
 use casper_types::{
     CLType, CLTyped, EntryPoint, EntryPointAccess, EntryPointType, EntryPoints, Key, Parameter,
@@ -214,6 +214,20 @@ pub fn change_swap_fee() -> EntryPoint {
     )
 }
 
+/// Returns the `set_supported_chains` entry point.
+pub fn set_supported_chains() -> EntryPoint {
+    EntryPoint::new(
+        String::from(SET_SUPPORTED_CHAINS_ENTRY_POINT_NAME),
+        vec![
+            Parameter::new(SUPPORTED_CHAINS, CLType::List(Box::new(CLType::U256))),
+            Parameter::new(IS_SUPPORTED, CLType::Bool),
+        ],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    )
+}
+
 /// Returns the `change_security` entry point.
 pub fn change_security() -> EntryPoint {
     EntryPoint::new(
@@ -266,5 +280,6 @@ pub fn generate_entry_points() -> EntryPoints {
     entry_points.add_entry_point(request_bridge_back());
     entry_points.add_entry_point(change_fee_receiver());
     entry_points.add_entry_point(change_swap_fee());
+    entry_points.add_entry_point(set_supported_chains());
     entry_points
 }

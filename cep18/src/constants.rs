@@ -54,6 +54,7 @@ pub const DECREASE_ALLOWANCE_ENTRY_POINT_NAME: &str = "decrease_allowance";
 pub const REQUEST_BRIDGE_BACK_ENTRY_POINT_NAME: &str = "request_bridge_back";
 pub const CHANGE_FEE_RECEIVER_ENTRY_POINT_NAME: &str = "change_fee_receiver";
 pub const CHANGE_SWAP_FEE_ENTRY_POINT_NAME: &str = "change_swap_fee";
+pub const SET_SUPPORTED_CHAINS_ENTRY_POINT_NAME: &str = "set_supported_chains";
 
 /// Name of `address` runtime argument.
 pub const ADDRESS: &str = "address";
@@ -88,3 +89,4 @@ pub const CONTRACT_OWNER_KEY_NAME: &str = "contract_owner";
 pub const ARG_CONTRACT_OWNER: &str = "contract_owner";
 pub const TRANSFER_OWNER_ENTRY_POINT_NAME: &str = "transfer_owner";
 pub const SUPPORTED_CHAINS: &str = "supported_chains";
+pub const IS_SUPPORTED: &str = "is_supported";
