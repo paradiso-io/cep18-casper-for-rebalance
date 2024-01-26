@@ -54,6 +54,7 @@ pub enum Cep18Error {
     RequestIdExist = 60023,
     RequestAmountTooLow = 60024,
     OnlyOwnerCanRevoke = 60025,
+    UnsupportedChainIdForRequestBridgeBack = 60026,
 }
 
 impl From<Cep18Error> for ApiError {

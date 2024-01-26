@@ -86,3 +86,4 @@ pub const SWAP_FEE: &str = "swap_fee";
 pub const MINTID: &str = "mintid";
 pub const FEE_RECEIVER: &str = "fee_receiver";
 pub const EVENTS_MODE: &str = "events_mode";
+pub const SUPPORTED_CHAINS: &str = "supported_chains";

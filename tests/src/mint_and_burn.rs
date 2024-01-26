@@ -31,7 +31,9 @@ fn test_mint_and_burn_tokens() {
         ADMIN_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
         MINTER_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
         SWAP_FEE => U256::from(0),
-        FEE_RECEIVER => TOKEN_OWNER_ADDRESS_1
+        FEE_RECEIVER => TOKEN_OWNER_ADDRESS_1,
+        SUPPORTED_CHAINS => vec![U256::from(97),U256::from(43113)]
+
     };
     deploy_cep18(&mut builder, args);
     println!("done deploy upgrage");
@@ -139,7 +141,24 @@ fn test_mint_and_burn_tokens() {
     );
 
     assert_eq!(total_supply_after_burn, total_supply_before_mint);
-    assert_eq!(1, 2);
+    println!("before request back");
+    let request_bridge_back = ExecuteRequestBuilder::contract_call_by_hash(
+        *DEFAULT_ACCOUNT_ADDR,
+        cep18_token,
+        "request_bridge_back",
+        runtime_args! {
+            "amount" => mint_amount,
+            "fee" => U256::zero(),
+            "to_chainid" => U256::from(1),
+            "id" => "636363".to_string(),
+            "receiver_address"=> "0x000000000".to_string()
+
+        },
+    )
+    .build();
+
+    builder.exec(request_bridge_back).expect_success().commit();
+    println!("Done request_bridge_back")
 }
 
 #[test]

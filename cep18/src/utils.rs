@@ -1,5 +1,10 @@
 //! Implementation details.
-use alloc::{collections::BTreeMap, string::String, vec, vec::Vec};
+use alloc::{
+    collections::BTreeMap,
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
 use casper_contract::{
     contract_api::{
         self,
@@ -270,6 +275,10 @@ pub fn read_request_map(unique_id: String) -> U256 {
     get_dictionary_value_from_key::<U256>(REQUEST_MAP, &unique_id).unwrap_or_default()
 }
 
+pub fn check_supported_chain(chain: U256) -> bool {
+    get_dictionary_value_from_key::<bool>(SUPPORTED_CHAINS, &chain.to_string()).unwrap_or_default()
+}
+
 pub fn save_swap_fee(swap_fee: U256) {
     set_key(SWAP_FEE, swap_fee);
 }
@@ -299,8 +308,8 @@ fn make_dictionary_item_key(mintid: &String) -> String {
     let key_bytes = runtime::blake2b(preimage);
     hex::encode(key_bytes)
 }
-// pub fn require(v: bool, e: Cep18Error) {
-//     if !v {
-//         runtime::revert(e);
-//     }
-// }
+pub fn require(v: bool, e: Cep18Error) {
+    if !v {
+        runtime::revert(e);
+    }
+}

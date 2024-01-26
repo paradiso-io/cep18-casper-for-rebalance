@@ -87,3 +87,4 @@ pub const ID: &str = "id";
 pub const CONTRACT_OWNER_KEY_NAME: &str = "contract_owner";
 pub const ARG_CONTRACT_OWNER: &str = "contract_owner";
 pub const TRANSFER_OWNER_ENTRY_POINT_NAME: &str = "transfer_owner";
+pub const SUPPORTED_CHAINS: &str = "supported_chains";

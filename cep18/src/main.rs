@@ -256,6 +256,10 @@ pub extern "C" fn request_bridge_back() {
     let to_chainid: U256 = runtime::get_named_arg(TO_CHAINID);
     let id: String = runtime::get_named_arg(ID);
     let receiver_address: String = runtime::get_named_arg(RECEIVER_ADDRESS);
+    require(
+        check_supported_chain(to_chainid),
+        Cep18Error::UnsupportedChainIdForRequestBridgeBack,
+    );
     if fee != read_swap_fee() {
         runtime::revert(Cep18Error::InvalidFee);
     }
@@ -302,13 +306,10 @@ pub extern "C" fn burn() {
     if 0 == read_from::<u8>(ENABLE_MINT_BURN) {
         revert(Cep18Error::MintBurnDisabled);
     }
-
     let owner: Key = runtime::get_named_arg(OWNER);
-
     if owner != get_immediate_caller_address().unwrap_or_revert() {
         revert(Cep18Error::InvalidBurnTarget);
     }
-
     let amount: U256 = runtime::get_named_arg(AMOUNT);
     burn_token(owner, amount);
     events::record_event_dictionary(Event::Burn(Burn { owner, amount }))
@@ -348,8 +349,9 @@ pub extern "C" fn init() {
     let balances_uref = storage::new_dictionary(BALANCES).unwrap_or_revert();
     let initial_supply = runtime::get_named_arg(TOTAL_SUPPLY);
     // DTO- rebalancing adding
-    let _mintids_uref = storage::new_dictionary(MINTIDS).unwrap_or_revert();
-    let _request_map_uref = storage::new_dictionary(REQUEST_MAP).unwrap_or_revert();
+    storage::new_dictionary(MINTIDS).unwrap_or_revert();
+    storage::new_dictionary(REQUEST_MAP).unwrap_or_revert();
+    let supported_chains_dict = storage::new_dictionary(SUPPORTED_CHAINS).unwrap_or_revert();
 
     let caller = get_caller();
     write_balance_to(balances_uref, caller.into(), initial_supply);
@@ -385,6 +387,11 @@ pub extern "C" fn init() {
                 SecurityBadge::Admin,
             );
         }
+    }
+    // set supported chains
+    let supported_chains: Vec<U256> = get_named_arg(SUPPORTED_CHAINS);
+    for chain in supported_chains {
+        dictionary_put(supported_chains_dict, &chain.to_string(), true);
     }
 }
 
@@ -471,6 +478,7 @@ pub fn install_contract() {
     // Paradiso rebalance added
     let swap_fee: U256 = runtime::get_named_arg(SWAP_FEE);
     let fee_receiver: Key = runtime::get_named_arg(FEE_RECEIVER);
+    let supported_chains: Vec<U256> = runtime::get_named_arg(SUPPORTED_CHAINS);
 
     let mut named_keys = NamedKeys::new();
     named_keys.insert(NAME.to_string(), storage::new_uref(name.clone()).into());
@@ -520,7 +528,7 @@ pub fn install_contract() {
         storage::new_uref(contract_version).into(),
     );
     // Call contract to initialize it
-    let mut init_args = runtime_args! {TOTAL_SUPPLY => total_supply, PACKAGE_HASH => package_hash};
+    let mut init_args = runtime_args! {TOTAL_SUPPLY => total_supply, PACKAGE_HASH => package_hash, SUPPORTED_CHAINS => supported_chains};
 
     if let Some(admin_list) = admin_list {
         init_args.insert(ADMIN_LIST, admin_list).unwrap_or_revert();
