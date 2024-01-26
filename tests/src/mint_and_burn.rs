@@ -31,7 +31,7 @@ fn test_mint_and_burn_tokens() {
         ADMIN_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
         MINTER_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
         SWAP_FEE => U256::from(0),
-        FEE_RECEIVER => Key::from(TOKEN_OWNER_ADDRESS_1)
+        FEE_RECEIVER => TOKEN_OWNER_ADDRESS_1
     };
     deploy_cep18(&mut builder, args);
     println!("done deploy upgrage");

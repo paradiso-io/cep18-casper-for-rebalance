@@ -262,11 +262,11 @@ pub fn read_mintids(mintid: String) -> u8 {
     get_dictionary_value_from_key::<u8>(MINTIDS, &make_dictionary_item_key(&mintid))
         .unwrap_or_default()
 }
-pub fn save_request_map(unique_id: &String, index: U256) {
+pub fn save_request_map(unique_id: String, index: U256) {
     write_dictionary_value_from_key(REQUEST_MAP, &unique_id, index);
 }
 
-pub fn read_request_map(unique_id: &String) -> U256 {
+pub fn read_request_map(unique_id: String) -> U256 {
     get_dictionary_value_from_key::<U256>(REQUEST_MAP, &unique_id).unwrap_or_default()
 }
 
@@ -296,7 +296,7 @@ pub fn log_msg(_msg: &str) {
 }
 fn make_dictionary_item_key(mintid: &String) -> String {
     let preimage = mintid.as_bytes();
-    let key_bytes = runtime::blake2b(&preimage);
+    let key_bytes = runtime::blake2b(preimage);
     hex::encode(key_bytes)
 }
 // pub fn require(v: bool, e: Cep18Error) {

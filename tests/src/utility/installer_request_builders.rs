@@ -43,7 +43,7 @@ pub(crate) fn setup() -> (InMemoryWasmTestBuilder, TestContext) {
         ADMIN_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
         MINTER_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
         SWAP_FEE => U256::from(0),
-        FEE_RECEIVER => Key::from(TOKEN_OWNER_ADDRESS_1)
+        FEE_RECEIVER => TOKEN_OWNER_ADDRESS_1
     })
 }
 

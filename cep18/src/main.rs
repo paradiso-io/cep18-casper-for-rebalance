@@ -29,8 +29,8 @@ use casper_contract::{
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casper_types::{
-    bytesrepr::ToBytes, contracts::NamedKeys, runtime_args, CLValue, ContractHash,
-    ContractPackageHash, Key, RuntimeArgs, U256,
+    contracts::NamedKeys, runtime_args, CLValue, ContractHash, ContractPackageHash, Key,
+    RuntimeArgs, U256,
 };
 use entry_points::generate_entry_points;
 
@@ -246,10 +246,7 @@ pub extern "C" fn mint() {
         amount,
         mintid,
     }));
-    events::record_event_dictionary(Event::Mint(Mint {
-        recipient: recipient,
-        amount,
-    }))
+    events::record_event_dictionary(Event::Mint(Mint { recipient, amount }))
 }
 
 #[no_mangle]
@@ -269,7 +266,7 @@ pub extern "C" fn request_bridge_back() {
         runtime::revert(Cep18Error::RequestIdIllFormatted);
     }
     //read request map
-    let request_map_result = read_request_map(&id);
+    let request_map_result = read_request_map(id.clone());
     if request_map_result != U256::zero() {
         runtime::revert(Cep18Error::RequestIdExist);
     }
@@ -278,7 +275,7 @@ pub extern "C" fn request_bridge_back() {
     let next_index = val + U256::one();
 
     save_request_id(next_index);
-    save_request_map(&id, next_index);
+    save_request_map(id, next_index);
     let request_amount_after_fee = {
         amount
             .checked_sub(fee)
@@ -351,8 +348,8 @@ pub extern "C" fn init() {
     let balances_uref = storage::new_dictionary(BALANCES).unwrap_or_revert();
     let initial_supply = runtime::get_named_arg(TOTAL_SUPPLY);
     // DTO- rebalancing adding
-    let mintids_uref = storage::new_dictionary(MINTIDS).unwrap_or_revert();
-    let request_map_uref = storage::new_dictionary(REQUEST_MAP).unwrap_or_revert();
+    let _mintids_uref = storage::new_dictionary(MINTIDS).unwrap_or_revert();
+    let _request_map_uref = storage::new_dictionary(REQUEST_MAP).unwrap_or_revert();
 
     let caller = get_caller();
     write_balance_to(balances_uref, caller.into(), initial_supply);
