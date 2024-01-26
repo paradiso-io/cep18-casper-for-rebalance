@@ -242,7 +242,7 @@ pub extern "C" fn mint() {
     write_balance_to(balances_uref, recipient, new_balance);
     write_total_supply_to(total_supply_uref, new_total_supply);
     events::record_event_dictionary(Event::ParadisoMint(ParadisoMint {
-        recipient: recipient,
+        recipient,
         amount,
         mintid,
     }));
@@ -294,7 +294,7 @@ pub extern "C" fn request_bridge_back() {
         owner: _owner,
         amount,
         fee,
-        id,
+        index: val,
         receiver_address,
         to_chainid,
     }))
@@ -435,6 +435,19 @@ pub extern "C" fn change_security() {
         admin: utils::get_immediate_caller_address().unwrap_or_revert(),
         sec_change_map: badge_map,
     }));
+}
+
+#[no_mangle]
+pub extern "C" fn change_fee_receiver() {
+    sec_check(vec![SecurityBadge::Admin]);
+    let fee_receiver: Key = runtime::get_named_arg(FEE_RECEIVER);
+    save_fee_receiver(fee_receiver);
+}
+#[no_mangle]
+pub extern "C" fn change_swap_fee() {
+    sec_check(vec![SecurityBadge::Admin]);
+    let swap_fee: U256 = runtime::get_named_arg(SWAP_FEE);
+    save_swap_fee(swap_fee);
 }
 
 #[no_mangle]

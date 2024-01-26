@@ -177,7 +177,7 @@ pub fn mint() -> EntryPoint {
         EntryPointType::Contract,
     )
 }
-/// Returns the `mint` entry point.
+/// Returns the `request_bridge_back` entry point.
 pub fn request_bridge_back() -> EntryPoint {
     EntryPoint::new(
         String::from(REQUEST_BRIDGE_BACK_ENTRY_POINT_NAME),
@@ -188,6 +188,26 @@ pub fn request_bridge_back() -> EntryPoint {
             Parameter::new(ID, String::cl_type()),
             Parameter::new(RECEIVER_ADDRESS, String::cl_type()),
         ],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    )
+}
+/// Returns the `change_fee_receiver` entry point.
+pub fn change_fee_receiver() -> EntryPoint {
+    EntryPoint::new(
+        String::from(CHANGE_FEE_RECEIVER_ENTRY_POINT_NAME),
+        vec![Parameter::new(FEE_RECEIVER, Key::cl_type())],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    )
+}
+/// Returns the `change_fee_receiver` entry point.
+pub fn change_swap_fee() -> EntryPoint {
+    EntryPoint::new(
+        String::from(CHANGE_SWAP_FEE_ENTRY_POINT_NAME),
+        vec![Parameter::new(SWAP_FEE, U256::cl_type())],
         CLType::Unit,
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -244,5 +264,7 @@ pub fn generate_entry_points() -> EntryPoints {
     entry_points.add_entry_point(burn());
     entry_points.add_entry_point(mint());
     entry_points.add_entry_point(request_bridge_back());
+    entry_points.add_entry_point(change_fee_receiver());
+    entry_points.add_entry_point(change_swap_fee());
     entry_points
 }

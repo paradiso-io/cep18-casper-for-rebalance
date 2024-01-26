@@ -105,7 +105,7 @@ pub struct RequestBridgeBack {
     pub fee: U256,
     pub receiver_address: String,
     pub to_chainid: U256,
-    pub id: String,
+    pub index: U256,
 }
 
 fn ces(event: Event) {

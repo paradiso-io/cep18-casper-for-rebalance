@@ -1,6 +1,4 @@
 //! Implementation details.
-use crate::alloc::string::ToString;
-
 use alloc::{collections::BTreeMap, string::String, vec, vec::Vec};
 use casper_contract::{
     contract_api::{
@@ -299,10 +297,10 @@ pub fn log_msg(_msg: &str) {
 fn make_dictionary_item_key(mintid: &String) -> String {
     let preimage = mintid.as_bytes();
     let key_bytes = runtime::blake2b(&preimage);
-    hex::encode(&key_bytes)
+    hex::encode(key_bytes)
 }
-pub fn require(v: bool, e: Cep18Error) {
-    if !v {
-        runtime::revert(e);
-    }
-}
+// pub fn require(v: bool, e: Cep18Error) {
+//     if !v {
+//         runtime::revert(e);
+//     }
+// }

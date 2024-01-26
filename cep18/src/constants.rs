@@ -52,6 +52,8 @@ pub const DECREASE_ALLOWANCE_ENTRY_POINT_NAME: &str = "decrease_allowance";
 
 /// Name of `request_bridge_back` entry point.
 pub const REQUEST_BRIDGE_BACK_ENTRY_POINT_NAME: &str = "request_bridge_back";
+pub const CHANGE_FEE_RECEIVER_ENTRY_POINT_NAME: &str = "change_fee_receiver";
+pub const CHANGE_SWAP_FEE_ENTRY_POINT_NAME: &str = "change_swap_fee";
 
 /// Name of `address` runtime argument.
 pub const ADDRESS: &str = "address";
