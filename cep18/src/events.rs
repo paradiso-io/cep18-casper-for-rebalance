@@ -33,6 +33,8 @@ pub enum Event {
     ChangeSecurity(ChangeSecurity),
     RequestBridgeBack(RequestBridgeBack),
     ParadisoMint(ParadisoMint),
+    RegisterBridgeBack(RegisterBridgeBack),
+    SetFeeBridgeBack(SetFeeBridgeBack),
 }
 
 #[derive(Event, Debug, PartialEq, Eq)]
@@ -107,6 +109,20 @@ pub struct RequestBridgeBack {
     pub to_chainid: U256,
     pub index: U256,
 }
+#[derive(Event, Debug, PartialEq, Eq)]
+pub struct SetFeeBridgeBack {
+    pub fee: U256,
+    pub request_id: U256,
+}
+
+#[derive(Event, Debug, PartialEq, Eq)]
+pub struct RegisterBridgeBack {
+    pub owner: Key,
+    pub amount: U256,
+    pub receiver_address: String,
+    pub to_chainid: U256,
+    pub index: U256,
+}
 
 fn ces(event: Event) {
     match event {
@@ -120,6 +136,8 @@ fn ces(event: Event) {
         Event::ChangeSecurity(ev) => emit(ev),
         Event::RequestBridgeBack(ev) => emit(ev),
         Event::ParadisoMint(ev) => emit(ev),
+        Event::RegisterBridgeBack(ev) => emit(ev),
+        Event::SetFeeBridgeBack(ev) => emit(ev),
     }
 }
 
@@ -138,6 +156,8 @@ pub fn init_events() {
             .with::<TransferFrom>()
             .with::<ChangeSecurity>()
             .with::<ParadisoMint>()
+            .with::<RegisterBridgeBack>()
+            .with::<SetFeeBridgeBack>()
             .with::<RequestBridgeBack>();
         casper_event_standard::init(schemas);
     }

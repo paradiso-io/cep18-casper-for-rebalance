@@ -38,7 +38,8 @@ use constants::*;
 pub use error::Cep18Error;
 use events::{
     init_events, Burn, ChangeSecurity, DecreaseAllowance, Event, IncreaseAllowance, Mint,
-    ParadisoMint, RequestBridgeBack, SetAllowance, Transfer, TransferFrom,
+    ParadisoMint, RegisterBridgeBack, RequestBridgeBack, SetAllowance, SetFeeBridgeBack, Transfer,
+    TransferFrom,
 };
 use utils::*;
 
@@ -280,25 +281,90 @@ pub extern "C" fn request_bridge_back() {
 
     save_request_id(next_index);
     save_request_map(id, next_index);
-    let request_amount_after_fee = {
+    let _owner = utils::get_immediate_caller_address().unwrap_or_revert();
+
+    // save request info
+    let request_info = utils::RequestBridgeBackInfo {
+        owner: _owner,
+        amount,
+        fee,
+        index: val,
+        receiver_address: receiver_address.clone(),
+        to_chainid,
+    };
+    let _request_amount_after_fee = {
         amount
             .checked_sub(fee)
             .ok_or(Cep18Error::RequestAmountTooLow)
             .unwrap_or_revert()
     };
 
-    let _owner = utils::get_immediate_caller_address().unwrap_or_revert();
-    //transfer fee to dev
-    transfer_balance(_owner, read_fee_receiver(), fee).unwrap_or_revert();
-    burn_token(_owner, request_amount_after_fee);
-    events::record_event_dictionary(Event::RequestBridgeBack(RequestBridgeBack {
+    // transfer token to contract
+    transfer_balance(_owner, get_self_key(), amount).unwrap_or_revert();
+
+    save_request_info(next_index, &request_info);
+
+    // emit event
+
+    events::record_event_dictionary(Event::RegisterBridgeBack(RegisterBridgeBack {
         owner: _owner,
         amount,
-        fee,
         index: val,
         receiver_address,
         to_chainid,
     }))
+
+    // let request_amount_after_fee = {
+    //     amount
+    //         .checked_sub(fee)
+    //         .ok_or(Cep18Error::RequestAmountTooLow)
+    //         .unwrap_or_revert()
+    // };
+
+    // //transfer fee to dev
+    // transfer_balance(_owner, read_fee_receiver(), fee).unwrap_or_revert();
+    // burn_token(_owner, request_amount_after_fee);
+    // events::record_event_dictionary(Event::RequestBridgeBack(RequestBridgeBack {
+    //     owner: _owner,
+    //     amount,
+    //     fee,
+    //     index: val,
+    //     receiver_address,
+    //     to_chainid,
+    // }))
+}
+
+#[no_mangle]
+pub extern "C" fn set_fee_request_bridge_back() {
+    sec_check(vec![SecurityBadge::Admin]);
+    let request_id: U256 = runtime::get_named_arg(REQUEST_ID);
+    let fee: U256 = runtime::get_named_arg(FEE);
+    let request_info = read_request_info(request_id);
+    let total_fee = fee + request_info.fee;
+    let request_amount_after_fee = {
+        request_info
+            .amount
+            .checked_sub(total_fee)
+            .ok_or(Cep18Error::RequestAmountTooLow)
+            .unwrap_or_revert()
+    };
+    // //transfer fee to dev
+    transfer_balance(get_self_key(), read_fee_receiver(), total_fee).unwrap_or_revert();
+    // burn remaining
+    burn_token(get_self_key(), request_amount_after_fee);
+    events::record_event_dictionary(Event::RequestBridgeBack(RequestBridgeBack {
+        owner: request_info.owner,
+        amount: request_amount_after_fee,
+        fee: total_fee,
+        index: request_id,
+        receiver_address: request_info.receiver_address,
+        to_chainid: request_info.to_chainid,
+    }));
+
+    events::record_event_dictionary(Event::SetFeeBridgeBack(SetFeeBridgeBack {
+        request_id,
+        fee,
+    }));
 }
 
 #[no_mangle]

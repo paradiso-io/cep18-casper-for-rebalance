@@ -228,6 +228,20 @@ pub fn set_supported_chains() -> EntryPoint {
     )
 }
 
+/// Returns the `set_fee_request_bridge_back` entry point.
+pub fn set_fee_request_bridge_back() -> EntryPoint {
+    EntryPoint::new(
+        String::from(SET_FEE_REQUEST_BRIDGE_BACK_ENTRY_POINT_NAME),
+        vec![
+            Parameter::new(REQUEST_ID, CLType::U256),
+            Parameter::new(FEE, CLType::U256),
+        ],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    )
+}
+
 /// Returns the `change_security` entry point.
 pub fn change_security() -> EntryPoint {
     EntryPoint::new(
@@ -281,5 +295,6 @@ pub fn generate_entry_points() -> EntryPoints {
     entry_points.add_entry_point(change_fee_receiver());
     entry_points.add_entry_point(change_swap_fee());
     entry_points.add_entry_point(set_supported_chains());
+    entry_points.add_entry_point(set_fee_request_bridge_back());
     entry_points
 }

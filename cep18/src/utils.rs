@@ -5,6 +5,7 @@ use alloc::{
     vec,
     vec::Vec,
 };
+
 use casper_contract::{
     contract_api::{
         self,
@@ -18,11 +19,35 @@ use casper_types::{
     api_error,
     bytesrepr::{self, FromBytes, ToBytes},
     system::CallStackElement,
-    ApiError, CLTyped, Key, URef, U256,
+    ApiError, CLTyped, ContractPackageHash, Key, URef, U256,
 };
 use core::convert::TryInto;
 
 use crate::{constants::*, error::Cep18Error};
+use casper_types_derive::{CLTyped, FromBytes, ToBytes};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone, CLTyped, ToBytes, FromBytes)]
+pub struct RequestBridgeBackInfo {
+    pub owner: Key,
+    pub amount: U256,
+    pub fee: U256,
+    pub index: U256,
+    pub receiver_address: String,
+    pub to_chainid: U256,
+}
+impl Default for RequestBridgeBackInfo {
+    fn default() -> RequestBridgeBackInfo {
+        RequestBridgeBackInfo {
+            owner: null_key(),
+            amount: U256::zero(),
+            fee: U256::zero(),
+            index: U256::zero(),
+            receiver_address: String::from(""),
+            to_chainid: U256::zero(),
+        }
+    }
+}
 
 /// Gets [`URef`] under a name.
 pub(crate) fn get_uref(name: &str) -> URef {
@@ -111,6 +136,10 @@ pub fn get_optional_named_arg_with_user_errors<T: FromBytes>(
         Ok(val) => Some(val),
         Err(_) => None,
     }
+}
+pub fn null_key() -> Key {
+    let null_hash: [u8; 32] = vec![0u8; 32].try_into().unwrap();
+    Key::from(ContractPackageHash::new(null_hash))
 }
 
 pub fn get_named_arg_with_user_errors<T: FromBytes>(
@@ -274,6 +303,14 @@ pub fn save_request_map(unique_id: String, index: U256) {
 pub fn read_request_map(unique_id: String) -> U256 {
     get_dictionary_value_from_key::<U256>(REQUEST_MAP, &unique_id).unwrap_or_default()
 }
+pub fn save_request_info(index: U256, request_info: &RequestBridgeBackInfo) {
+    write_dictionary_value_from_key(REQUEST_INFO, &index.to_string(), request_info.clone());
+}
+
+pub fn read_request_info(index: U256) -> RequestBridgeBackInfo {
+    get_dictionary_value_from_key::<RequestBridgeBackInfo>(REQUEST_INFO, &index.to_string())
+        .unwrap_or_default()
+}
 
 pub fn check_supported_chain(chain: U256) -> bool {
     get_dictionary_value_from_key::<bool>(SUPPORTED_CHAINS, &chain.to_string()).unwrap_or_default()
@@ -312,4 +349,18 @@ pub fn require(v: bool, e: Cep18Error) {
     if !v {
         runtime::revert(e);
     }
+}
+pub(crate) fn get_self_key() -> Key {
+    get_self_address().unwrap_or_revert()
+}
+
+pub(crate) fn get_self_address() -> Result<Key, Cep18Error> {
+    get_last_call_stack_item()
+        .map(call_stack_element_to_address)
+        .ok_or(Cep18Error::InvalidContext)
+}
+
+fn get_last_call_stack_item() -> Option<CallStackElement> {
+    let call_stack = runtime::get_call_stack();
+    call_stack.into_iter().rev().next()
 }
