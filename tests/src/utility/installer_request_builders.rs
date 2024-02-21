@@ -44,7 +44,8 @@ pub(crate) fn setup() -> (InMemoryWasmTestBuilder, TestContext) {
         MINTER_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
         SWAP_FEE => U256::from(0),
         FEE_RECEIVER => TOKEN_OWNER_ADDRESS_1,
-        SUPPORTED_CHAINS => vec![U256::from(97),U256::from(43113)]
+        SUPPORTED_CHAINS => vec![U256::from(97),U256::from(43113)],
+        "re_initialize_event" => true,
     })
 }
 
