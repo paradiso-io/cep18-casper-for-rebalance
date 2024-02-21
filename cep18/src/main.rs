@@ -190,8 +190,8 @@ pub extern "C" fn mint() {
         revert(Cep18Error::MintBurnDisabled);
     }
 
-    sec_check(vec![SecurityBadge::Minter]);
-    // sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
+    // sec_check(vec![SecurityBadge::Minter]);
+    sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
 
     let recipient: Key = runtime::get_named_arg(RECIPIENT);
     let amount: U256 = runtime::get_named_arg(AMOUNT);
@@ -270,6 +270,7 @@ pub extern "C" fn request_bridge_back() {
     if hex::decode(&id).is_err() {
         runtime::revert(Cep18Error::RequestIdIllFormatted);
     }
+
     //read request map
     let request_map_result = read_request_map(id.clone());
     if request_map_result != U256::zero() {
@@ -280,7 +281,7 @@ pub extern "C" fn request_bridge_back() {
     let next_index = val + U256::one();
 
     save_request_id(next_index);
-    save_request_map(id, next_index);
+    save_request_map(id, val);
     let _owner = utils::get_immediate_caller_address().unwrap_or_revert();
 
     // save request info
@@ -302,7 +303,7 @@ pub extern "C" fn request_bridge_back() {
     // transfer token to contract
     transfer_balance(_owner, get_self_key(), amount).unwrap_or_revert();
 
-    save_request_info(next_index, &request_info);
+    save_request_info(val, &request_info);
 
     // emit event
 
@@ -332,6 +333,16 @@ pub extern "C" fn request_bridge_back() {
     //     receiver_address,
     //     to_chainid,
     // }))
+}
+
+#[no_mangle]
+pub extern "C" fn re_initialize_event() {
+    sec_check(vec![SecurityBadge::Admin]);
+    runtime::remove_key("__events_length");
+    runtime::remove_key("__events_schema");
+    runtime::remove_key("__events");
+    runtime::remove_key("__events_ces_version");
+    init_events();
 }
 
 #[no_mangle]
@@ -417,6 +428,8 @@ pub extern "C" fn init() {
     // DTO- rebalancing adding
     storage::new_dictionary(MINTIDS).unwrap_or_revert();
     storage::new_dictionary(REQUEST_MAP).unwrap_or_revert();
+    storage::new_dictionary(REQUEST_INFO).unwrap_or_revert();
+
     let supported_chains_dict = storage::new_dictionary(SUPPORTED_CHAINS).unwrap_or_revert();
     let caller = get_caller();
     write_balance_to(balances_uref, caller.into(), initial_supply);
@@ -624,13 +637,9 @@ pub extern "C" fn call() {
     let hash_key_name = format!("{HASH_KEY_NAME_PREFIX}{name}");
 
     if !runtime::has_key(&hash_key_name) {
-        log_msg("install the first time");
-
         // install contract
         install_contract()
     } else {
-        log_msg("NOW upgrade contract");
-
         // upgrade contract
         // let hash_key_name = format!("{HASH_KEY_NAME_PREFIX}{name}");
         let package_hash: ContractPackageHash = runtime::get_key(&hash_key_name)
@@ -646,6 +655,16 @@ pub extern "C" fn call() {
                 .into();
         let (contract_hash, contract_version) =
             storage::add_contract_version(package_hash, generate_entry_points(), NamedKeys::new());
+
+        let re_initialize_event: bool = runtime::get_named_arg("re_initialize_event");
+        if re_initialize_event {
+            let _: () = runtime::call_versioned_contract(
+                package_hash,
+                None,
+                "re_initialize_event",
+                runtime_args! {},
+            );
+        }
 
         storage::disable_contract_version(package_hash, old_contract_hash).unwrap_or_revert();
 

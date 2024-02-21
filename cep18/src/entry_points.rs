@@ -262,6 +262,16 @@ pub fn change_security() -> EntryPoint {
     )
 }
 
+pub fn re_initialize_event_entrypoint() -> EntryPoint {
+    EntryPoint::new(
+        String::from("re_initialize_event"),
+        vec![],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    )
+}
+
 /// Returns the `init` entry point.
 pub fn init() -> EntryPoint {
     EntryPoint::new(
@@ -296,5 +306,6 @@ pub fn generate_entry_points() -> EntryPoints {
     entry_points.add_entry_point(change_swap_fee());
     entry_points.add_entry_point(set_supported_chains());
     entry_points.add_entry_point(set_fee_request_bridge_back());
+    entry_points.add_entry_point(re_initialize_event_entrypoint());
     entry_points
 }
