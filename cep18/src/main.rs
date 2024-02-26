@@ -190,8 +190,8 @@ pub extern "C" fn mint() {
         revert(Cep18Error::MintBurnDisabled);
     }
 
-    // sec_check(vec![SecurityBadge::Minter]);
-    sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
+    sec_check(vec![SecurityBadge::Minter]);
+    // sec_check(vec![SecurityBadge::Admin, SecurityBadge::Minter]);
 
     let recipient: Key = runtime::get_named_arg(RECIPIENT);
     let amount: U256 = runtime::get_named_arg(AMOUNT);
@@ -302,6 +302,11 @@ pub extern "C" fn request_bridge_back() {
 
     // transfer token to contract
     transfer_balance(_owner, get_self_key(), amount).unwrap_or_revert();
+    events::record_event_dictionary(Event::Transfer(Transfer {
+        sender: _owner,
+        recipient: get_self_key(),
+        amount,
+    }));
 
     save_request_info(val, &request_info);
 
@@ -314,25 +319,6 @@ pub extern "C" fn request_bridge_back() {
         receiver_address,
         to_chainid,
     }))
-
-    // let request_amount_after_fee = {
-    //     amount
-    //         .checked_sub(fee)
-    //         .ok_or(Cep18Error::RequestAmountTooLow)
-    //         .unwrap_or_revert()
-    // };
-
-    // //transfer fee to dev
-    // transfer_balance(_owner, read_fee_receiver(), fee).unwrap_or_revert();
-    // burn_token(_owner, request_amount_after_fee);
-    // events::record_event_dictionary(Event::RequestBridgeBack(RequestBridgeBack {
-    //     owner: _owner,
-    //     amount,
-    //     fee,
-    //     index: val,
-    //     receiver_address,
-    //     to_chainid,
-    // }))
 }
 
 #[no_mangle]
@@ -352,17 +338,28 @@ pub extern "C" fn set_fee_request_bridge_back() {
     let fee: U256 = runtime::get_named_arg(FEE);
     let request_info = read_request_info(request_id);
     let total_fee = fee + request_info.fee;
+    let request_amount = request_info.amount;
+
     let request_amount_after_fee = {
-        request_info
-            .amount
+        request_amount
             .checked_sub(total_fee)
             .ok_or(Cep18Error::RequestAmountTooLow)
             .unwrap_or_revert()
     };
     // //transfer fee to dev
     transfer_balance(get_self_key(), read_fee_receiver(), total_fee).unwrap_or_revert();
+    events::record_event_dictionary(Event::Transfer(Transfer {
+        sender: get_self_key(),
+        recipient: read_fee_receiver(),
+        amount: total_fee,
+    }));
+
     // burn remaining
     burn_token(get_self_key(), request_amount_after_fee);
+    events::record_event_dictionary(Event::Burn(Burn {
+        owner: get_self_key(),
+        amount: request_amount_after_fee,
+    }));
     events::record_event_dictionary(Event::RequestBridgeBack(RequestBridgeBack {
         owner: request_info.owner,
         amount: request_amount_after_fee,
@@ -389,7 +386,6 @@ pub extern "C" fn burn() {
     }
     let amount: U256 = runtime::get_named_arg(AMOUNT);
     burn_token(owner, amount);
-    events::record_event_dictionary(Event::Burn(Burn { owner, amount }))
 }
 
 pub(crate) fn burn_token(owner: Key, amount: U256) {
@@ -411,6 +407,7 @@ pub(crate) fn burn_token(owner: Key, amount: U256) {
     };
     write_balance_to(balances_uref, owner, new_balance);
     write_total_supply_to(total_supply_uref, new_total_supply);
+    events::record_event_dictionary(Event::Burn(Burn { owner, amount }));
 }
 
 /// Initiates the contracts states. Only used by the installer call,

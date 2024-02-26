@@ -173,7 +173,181 @@ fn test_mint_and_burn_tokens() {
     .build();
 
     builder.exec(set_supported_chains).expect_success().commit();
-    println!("Done set_supported_chains")
+    println!("Done set_supported_chains");
+    println!("before set fee");
+    let request_bridge_back = ExecuteRequestBuilder::contract_call_by_hash(
+        *DEFAULT_ACCOUNT_ADDR,
+        cep18_token,
+        "set_fee_request_bridge_back",
+        runtime_args! {
+            "request_id" => U256::zero(),
+            "fee" => U256::from("1000000"),
+
+        },
+    )
+    .build();
+
+    builder.exec(request_bridge_back).expect_success().commit();
+    println!("Done request_bridge_back");
+}
+#[test]
+fn test_whole() {
+    let mint_amount = U256::from(1000000000);
+
+    let (mut builder, TestContext { cep18_token, .. }) = setup();
+    println!("a");
+    println!("{}", *DEFAULT_ACCOUNT_ADDR);
+    // upgrade
+    let args = runtime_args! {
+        ARG_NAME => TOKEN_NAME,
+        ARG_SYMBOL => TOKEN_SYMBOL,
+        ARG_DECIMALS => TOKEN_DECIMALS_SIX,
+        ARG_TOTAL_SUPPLY => U256::from("1000000000000"),
+        EVENTS_MODE => 1_u8,
+        ENABLE_MINT_BURN =>1_u8,
+        ADMIN_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
+        MINTER_LIST => vec![Key::from(*DEFAULT_ACCOUNT_ADDR)],
+        SWAP_FEE => U256::from(0),
+        FEE_RECEIVER => TOKEN_OWNER_ADDRESS_1,
+        SUPPORTED_CHAINS => vec![U256::from(97),U256::from(43113)],
+        "re_initialize_event" => true
+
+    };
+    deploy_cep18(&mut builder, args);
+    println!("done deploy upgrage");
+
+    let mint_request = ExecuteRequestBuilder::contract_call_by_hash(
+        *DEFAULT_ACCOUNT_ADDR,
+        cep18_token,
+        METHOD_MINT,
+        runtime_args! {RECIPIENT => TOKEN_OWNER_ADDRESS_1, AMOUNT => U256::from(TOKEN_OWNER_AMOUNT_1), SWAP_FEE => U256::zero(), MINTID => "123".to_string()},
+    )
+    .build();
+    builder.exec(mint_request).expect_success().commit();
+    let mint_request_2 = ExecuteRequestBuilder::contract_call_by_hash(
+        *DEFAULT_ACCOUNT_ADDR,
+        cep18_token,
+        METHOD_MINT,
+        runtime_args! {RECIPIENT => TOKEN_OWNER_ADDRESS_2, AMOUNT => U256::from(TOKEN_OWNER_AMOUNT_2),SWAP_FEE => U256::zero(), MINTID => "1234".to_string()},
+    )
+    .build();
+    builder.exec(mint_request_2).expect_success().commit();
+    println!(
+        "mint gas {:?}",
+        builder.last_exec_gas_cost().value().as_u128() / 1_000_000_000_u128
+    );
+    let total_supply_before_mint = cep18_check_total_supply(&mut builder, &cep18_token);
+
+    let mint_request = ExecuteRequestBuilder::contract_call_by_hash(
+        *DEFAULT_ACCOUNT_ADDR,
+        cep18_token,
+        METHOD_MINT,
+        runtime_args! {
+            RECIPIENT => TOKEN_OWNER_ADDRESS_1,
+            ARG_AMOUNT => mint_amount,
+            SWAP_FEE => U256::zero(),
+            MINTID => "0x703ed6891a882d9d4821367b3ab62ebdebaa87303c6d1642874212e7519a81eb-43113-96945816564243-83-0x6fa6fa85d692f6956064c398c3918a4bff2c1de3-43113".to_string()
+
+        },
+    )
+    .build();
+
+    builder.exec(mint_request).expect_success().commit();
+
+    assert_eq!(
+        cep18_check_balance_of(&mut builder, &cep18_token, TOKEN_OWNER_ADDRESS_1),
+        U256::from(TOKEN_OWNER_AMOUNT_1) + mint_amount,
+    );
+    // assert_eq!(
+    //     cep18_check_balance_of(&mut builder, &cep18_token, TOKEN_OWNER_ADDRESS_2),
+    //     U256::from(TOKEN_OWNER_AMOUNT_2)
+    // );
+
+    let total_supply_after_mint = cep18_check_total_supply(&mut builder, &cep18_token);
+    // assert_eq!(
+    //     total_supply_after_mint,
+    //     total_supply_before_mint + mint_amount,
+    // );
+    // let total_supply_before_burn = total_supply_after_mint;
+
+    // assert_eq!(
+    //     cep18_check_balance_of(
+    //         &mut builder,
+    //         &cep18_token,
+    //         Key::Account(*DEFAULT_ACCOUNT_ADDR)
+    //     ),
+    //     U256::from(999999999),
+    // );
+    // assert_eq!(
+    //     cep18_check_balance_of(&mut builder, &cep18_token, TOKEN_OWNER_ADDRESS_2),
+    //     U256::from(TOKEN_OWNER_AMOUNT_2)
+    // );
+    // let total_supply_after_burn = cep18_check_total_supply(&mut builder, &cep18_token);
+    // assert_eq!(
+    //     total_supply_after_burn,
+    //     total_supply_before_burn - mint_amount,
+    // );
+
+    // assert_eq!(total_supply_after_burn, total_supply_before_mint);
+    println!("before request back");
+    println!(
+        "balance default acc  {:?}",
+        cep18_check_balance_of(
+            &mut builder,
+            &cep18_token,
+            Key::Account(*DEFAULT_ACCOUNT_ADDR)
+        )
+    );
+    let request_bridge_back = ExecuteRequestBuilder::contract_call_by_hash(
+        *DEFAULT_ACCOUNT_ADDR,
+        cep18_token,
+        "request_bridge_back",
+        runtime_args! {
+            "amount" => U256::from(100000000),
+            "fee" => U256::zero(),
+            "to_chainid" => U256::from(97),
+            "id" => "636363".to_string(),
+            "receiver_address"=> "0x000000000".to_string()
+
+        },
+    )
+    .build();
+
+    builder.exec(request_bridge_back).expect_success().commit();
+    println!("Done request_bridge_back");
+    let set_supported_chains = ExecuteRequestBuilder::contract_call_by_hash(
+        *DEFAULT_ACCOUNT_ADDR,
+        cep18_token,
+        "set_supported_chains",
+        runtime_args! {
+            "supported_chains" => vec![U256::from(1), U256::from(97)],
+            "is_supported"=> false
+
+        },
+    )
+    .build();
+
+    builder.exec(set_supported_chains).expect_success().commit();
+    println!("Done set_supported_chains");
+    println!("before set fee");
+    let set_fee_request_bridge_back = ExecuteRequestBuilder::contract_call_by_hash(
+        *DEFAULT_ACCOUNT_ADDR,
+        cep18_token,
+        "set_fee_request_bridge_back",
+        runtime_args! {
+            "request_id" => U256::zero(),
+            "fee" => U256::from(1000000),
+
+        },
+    )
+    .build();
+
+    builder
+        .exec(set_fee_request_bridge_back)
+        .expect_success()
+        .commit();
+    println!("Done set fee");
+    assert_eq!(1, 2);
 }
 
 #[test]

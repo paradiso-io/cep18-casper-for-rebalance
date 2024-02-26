@@ -36,7 +36,7 @@ pub(crate) fn setup() -> (InMemoryWasmTestBuilder, TestContext) {
     setup_with_args(runtime_args! {
         ARG_NAME => TOKEN_NAME,
         ARG_SYMBOL => TOKEN_SYMBOL,
-        ARG_DECIMALS => TOKEN_DECIMALS,
+        ARG_DECIMALS => TOKEN_DECIMALS_SIX,
         ARG_TOTAL_SUPPLY => U256::from(TOKEN_TOTAL_SUPPLY),
         EVENTS_MODE => 1_u8,
         ENABLE_MINT_BURN =>1_u8,

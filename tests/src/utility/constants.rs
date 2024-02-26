@@ -26,6 +26,8 @@ pub const ERROR_OVERFLOW: u16 = 60003;
 pub const TOKEN_NAME: &str = "CasperTest";
 pub const TOKEN_SYMBOL: &str = "CSPRT";
 pub const TOKEN_DECIMALS: u8 = 100;
+pub const TOKEN_DECIMALS_SIX: u8 = 6;
+
 pub const TOKEN_TOTAL_SUPPLY: u64 = 1_000_000_000;
 
 pub const METHOD_TRANSFER: &str = "transfer";

@@ -337,9 +337,9 @@ pub fn save_request_id(request_id: U256) {
 pub fn read_request_id() -> U256 {
     get_key(REQUEST_ID).unwrap_or_default()
 }
-// pub fn log_msg(_msg: &str) {
-//     // runtime::print(_msg);
-// }
+pub fn log_msg(_msg: &str) {
+    // runtime::print(_msg);
+}
 fn make_dictionary_item_key(mintid: &String) -> String {
     let preimage = mintid.as_bytes();
     let key_bytes = runtime::blake2b(preimage);
