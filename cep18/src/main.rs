@@ -356,10 +356,6 @@ pub extern "C" fn set_fee_request_bridge_back() {
 
     // burn remaining
     burn_token(get_self_key(), request_amount_after_fee);
-    events::record_event_dictionary(Event::Burn(Burn {
-        owner: get_self_key(),
-        amount: request_amount_after_fee,
-    }));
     events::record_event_dictionary(Event::RequestBridgeBack(RequestBridgeBack {
         owner: request_info.owner,
         amount: request_amount_after_fee,
