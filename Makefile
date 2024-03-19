@@ -21,7 +21,7 @@ test: setup-test
 	cd tests && cargo test
 
 test-specific: setup-test
-	cd tests && cargo test -p tests test_whole
+	cd tests && cargo test -p tests should_redeem
 
 
 clippy:

@@ -210,7 +210,6 @@ pub extern "C" fn mint() {
     if amount < swap_fee {
         runtime::revert(Cep18Error::MintTooLow);
     }
-
     _mint(recipient, swap_fee, amount);
 
     events::record_event_dictionary(Event::ParadisoMint(ParadisoMint {

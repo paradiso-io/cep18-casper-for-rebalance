@@ -1,4 +1,4 @@
-use crate::Event;
+use crate::{get_self_key, log_msg, Event};
 use alloc::{
     collections::BTreeMap,
     string::{String, ToString},
@@ -35,11 +35,14 @@ use casper_types_derive::{CLTyped, FromBytes, ToBytes};
 use serde::{Deserialize, Serialize};
 
 #[no_mangle]
-pub extern "C" fn set_redeen_tokens() {
+pub extern "C" fn set_redeem_tokens() {
     sec_check(vec![SecurityBadge::Admin]);
     let tokens: Vec<Key> = runtime::get_named_arg(REDEEM_TOKENS);
     let is_supported: bool = runtime::get_named_arg(IS_SUPPORTED);
+
     for token in tokens {
+        log_msg("tokens");
+        log_msg(&token.to_formatted_string());
         let token_dict_key = make_dictionary_item_key_for_contract(token);
         write_dictionary_value_from_key(REDEEM_TOKENS, &token_dict_key, is_supported);
     }
@@ -58,13 +61,25 @@ pub extern "C" fn redeem_to_multichain_token() {
     let amount: U256 = runtime::get_named_arg("amount");
     let caller = get_immediate_caller_address().unwrap_or_revert();
     check_redeem_support(token_package_hash);
+    // transfer from to this contract
+    runtime::call_versioned_contract::<()>(
+        token_package_hash.into_hash().unwrap_or_revert().into(),
+        None,
+        "transfer_from",
+        runtime_args! {
+            "owner" => caller,
+            "recipient" => get_self_key(),
+            "amount" => amount
+        },
+    );
+
     // burn old version token
     runtime::call_versioned_contract::<()>(
         token_package_hash.into_hash().unwrap_or_revert().into(),
         None,
         "burn",
         runtime_args! {
-            "owner" => caller,
+            "owner" => get_self_key(),
             "amount" => amount
         },
     );

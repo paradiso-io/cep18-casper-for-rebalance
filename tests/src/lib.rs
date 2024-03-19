@@ -8,3 +8,6 @@ mod mint_and_burn;
 mod transfer;
 #[cfg(test)]
 mod utility;
+
+#[cfg(test)]
+mod redeem;
