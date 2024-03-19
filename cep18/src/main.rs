@@ -11,6 +11,7 @@ pub mod entry_points;
 mod error;
 mod events;
 mod modalities;
+mod redeem;
 mod utils;
 use alloc::{
     collections::BTreeMap,
@@ -210,6 +211,16 @@ pub extern "C" fn mint() {
         runtime::revert(Cep18Error::MintTooLow);
     }
 
+    _mint(recipient, swap_fee, amount);
+
+    events::record_event_dictionary(Event::ParadisoMint(ParadisoMint {
+        recipient,
+        amount,
+        mintid,
+    }));
+}
+
+fn _mint(recipient: Key, swap_fee: U256, amount: U256) {
     let balances_uref = get_balances_uref();
     let total_supply_uref = get_total_supply_uref();
     let mut new_balance = {
@@ -242,11 +253,6 @@ pub extern "C" fn mint() {
     write_balance_to(balances_uref, fee_receiver, new_dev_balance);
     write_balance_to(balances_uref, recipient, new_balance);
     write_total_supply_to(total_supply_uref, new_total_supply);
-    events::record_event_dictionary(Event::ParadisoMint(ParadisoMint {
-        recipient,
-        amount,
-        mintid,
-    }));
     events::record_event_dictionary(Event::Mint(Mint { recipient, amount }))
 }
 
@@ -422,6 +428,7 @@ pub extern "C" fn init() {
     storage::new_dictionary(MINTIDS).unwrap_or_revert();
     storage::new_dictionary(REQUEST_MAP).unwrap_or_revert();
     storage::new_dictionary(REQUEST_INFO).unwrap_or_revert();
+    storage::new_dictionary(REDEEM_TOKENS).unwrap_or_revert();
 
     let supported_chains_dict = storage::new_dictionary(SUPPORTED_CHAINS).unwrap_or_revert();
     let caller = get_caller();

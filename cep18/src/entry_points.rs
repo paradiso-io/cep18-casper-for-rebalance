@@ -242,6 +242,34 @@ pub fn set_fee_request_bridge_back() -> EntryPoint {
     )
 }
 
+/// Returns the `set_fee_request_bridge_back` entry point.
+pub fn set_redeen_tokens() -> EntryPoint {
+    EntryPoint::new(
+        String::from(SET_REDEEM_TOKENS_ENTRY_POINT_NAME),
+        vec![
+            Parameter::new(REDEEM_TOKENS, CLType::List(Box::new(CLType::Key))),
+            Parameter::new(IS_SUPPORTED, CLType::Bool),
+        ],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    )
+}
+
+/// Returns the `set_fee_request_bridge_back` entry point.
+pub fn redeem_to_multichain_token() -> EntryPoint {
+    EntryPoint::new(
+        String::from(REDEEM_TO_MULTICHAIN_TOKENS_ENTRY_POINT_NAME),
+        vec![
+            Parameter::new("token_package_hash", CLType::Key),
+            Parameter::new(AMOUNT, CLType::U256),
+        ],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    )
+}
+
 /// Returns the `change_security` entry point.
 pub fn change_security() -> EntryPoint {
     EntryPoint::new(
@@ -307,5 +335,7 @@ pub fn generate_entry_points() -> EntryPoints {
     entry_points.add_entry_point(set_supported_chains());
     entry_points.add_entry_point(set_fee_request_bridge_back());
     entry_points.add_entry_point(re_initialize_event_entrypoint());
+    entry_points.add_entry_point(set_redeen_tokens());
+    entry_points.add_entry_point(redeem_to_multichain_token());
     entry_points
 }

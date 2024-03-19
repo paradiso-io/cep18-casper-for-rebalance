@@ -35,6 +35,7 @@ pub enum Event {
     ParadisoMint(ParadisoMint),
     RegisterBridgeBack(RegisterBridgeBack),
     SetFeeBridgeBack(SetFeeBridgeBack),
+    Redeem(Redeem),
 }
 
 #[derive(Event, Debug, PartialEq, Eq)]
@@ -54,6 +55,13 @@ pub struct ParadisoMint {
 pub struct Burn {
     pub owner: Key,
     pub amount: U256,
+}
+
+#[derive(Event, Debug, PartialEq, Eq)]
+pub struct Redeem {
+    pub owner: Key,
+    pub amount: U256,
+    pub old_token_package_hash: Key,
 }
 
 #[derive(Event, Debug, PartialEq, Eq)]
@@ -138,6 +146,7 @@ fn ces(event: Event) {
         Event::ParadisoMint(ev) => emit(ev),
         Event::RegisterBridgeBack(ev) => emit(ev),
         Event::SetFeeBridgeBack(ev) => emit(ev),
+        Event::Redeem(ev) => emit(ev),
     }
 }
 
@@ -158,6 +167,7 @@ pub fn init_events() {
             .with::<ParadisoMint>()
             .with::<RegisterBridgeBack>()
             .with::<SetFeeBridgeBack>()
+            .with::<Redeem>()
             .with::<RequestBridgeBack>();
         casper_event_standard::init(schemas);
     }

@@ -347,7 +347,6 @@ fn test_whole() {
         .expect_success()
         .commit();
     println!("Done set fee");
-    assert_eq!(1, 2);
 }
 
 #[test]
